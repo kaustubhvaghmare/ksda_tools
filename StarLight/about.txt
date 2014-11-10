@@ -1,0 +1,9 @@
+The tools under RotationCurve category will eventually deliver a whole bunch of
+FITS files which are all 1-d spectra extracted from the 2d long slit spectra.
+These will have to be fed to Starlight. But Starlight has its own way of
+accepting information about the spectra. So, there will first be a need for
+creating suitable input files. Once Starlight runs, there will have to be
+suitable files which can parse Starlight output and give suitable information
+about the same.
+
+This folder contains various utilities to achieve the same.
