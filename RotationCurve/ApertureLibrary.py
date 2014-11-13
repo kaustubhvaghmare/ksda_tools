@@ -256,7 +256,7 @@ def get_aperture(filename, file_err=None):
 				plt.plot([dum,dum,dum],[0,xsec_max/2.0,xsec_max])
 		plt.plot(xsection)
 	
-	return aperture_coord[:,:num_apert]	
+	return aperture_coord	
 #	for i in range(0,windowno):
 #		for j in range(0,num_apert):
 #			x1 = int(aperture_coord[i,j])
