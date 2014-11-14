@@ -49,6 +49,7 @@ class StarOutput(object):
 
 		# Create an Astropy table based on the above temporary file.
 		self.modelspec = Table.read("temp.txt", format="ascii")
+		self.modelspec = self.modelspec[ self.modelspec["col4"] != -2 ]
 		# And now delete the file.
 		os.remove("temp.txt")
 

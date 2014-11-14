@@ -14,6 +14,7 @@ import os
 import ApertureLibrary as al
 from pyraf import iraf
 import pysynphot as ps
+from RotationCurveLib import *
 
 # Start by validating inputs.
 if len(sys.argv) != 3:
@@ -77,19 +78,24 @@ aperture_coordinates = al.get_aperture(filename)
 
 # aperture_coordinates[0] = array of apertures for first window.
 # This is how aperture_coordinates is structured.
-(no_windows, no_apertures) = aperture_coordinates.shape
+no_windows = aperture_coordinates.shape[0]
+no_apertures = (aperture_coordinates[0] != 0).sum()
 
 hdulist = pf.open(filename)
 data = hdulist[0].data
 header = hdulist[0].header
 
+# Determine centroid of the spatial profile for the 2d spectra.
+centroid =  GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
+
+
 aperture_map = open(filename_root+"_aper_map.dat", "w")
 
 for w in range(no_windows):
 	print "Working on Window %d:" % w
-	for a in range(no_apertures):
+	for a in range(no_apertures-1):
 		x1, x2 = int(aperture_coordinates[w, a]), int(aperture_coordinates[w, a+1])
-		print "\tWorking on Aperture %d defined from %d to %d." %(a,x1,x2)
+		print "\tWorking on Aperture %d defined from %d to %d." %(a+1,x1,x2)
 		for counter, row in enumerate(range(x1, x2)):
 			# Get data slice.
 			spec_data = data[row,:]
@@ -99,21 +105,11 @@ for w in range(no_windows):
 			# Use Spline to get wavelength associated with 
 			redshift_at_aperture = splinez(row)
 			# Deredshift the spectrum.
-			iraf.noao.twodspec.longslit.dopcor(input=tempfile, output=tempfile, redshift = redshift_at_aperture)
+			iraf.noao.twodspec.longslit.dopcor(input=tempfile, output=tempfile, redshift = float(redshift_at_aperture))
 		# We now have several files present which have all been deredshifted.
 		temp_aperture_files = [ "temp%d.fits" % i for i in range(len(range(x1,x2))) ]
 		aperture_filename = "%sWindow%d_Aperture%d.fits" % (filename_root, w, a) 
 		SumUpSpectra( temp_aperture_files, aperture_filename)
 		print "Summing up all parts of aperture...done."
-		aperture_map.write("%s\t%.2f\n" % (aperture_filename, (x1+x2)/2.0) )
-
-
-	
-
-
-		
-
-	
-
-
-
+		position = (x1+x2)/2.0 - centroid
+		aperture_map.write("%s\t%.2f\n" % (aperture_filename, position))
