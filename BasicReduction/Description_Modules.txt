@@ -1,0 +1,39 @@
+Understand
+- analyze the files and rename them. Also allows trimming of useless image regions.
+
+Preprocess
+- allow for CCD gap filling for flats and science images BUT NOT ARCs. Also 
+performs cosmic ray corrections.
+
+Flat
+- takes all FLAT field images and combines them, normalizes them using median 
+and
+- if run using "noprocess" argument, it will detect a flat-field object and 
+post confirmation from user that this is a normalized flat-field, it will apply
+the same.
+- in both modes, the user is given a chance to make flat-fielded science frames
+as default inputs from future processes.
+
+Identify
+- allows user to perform wavelength calibration.
+- allows user to fit coordinate system.
+
+Transform
+- applies coordinate and wavelength solution from above module to all science
+frames.
+
+Background
+- allows for background subtraction to be carried out on current science frames.
+
+Combine
+- allows user to combine the science frames (background subtracted, generally) 
+into a single science frame using average combination along with average-sigma
+clipping for outlier rejection.
+
+Extract
+- allows user to perform extraction on individual science frames.
+- or on combined science frame.
+
+
+
+

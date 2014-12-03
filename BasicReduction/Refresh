@@ -1,0 +1,53 @@
+#! /usr/bin/python
+# This program will return the directory where spectrosopic reduction
+# is being performed to the original form i.e. as if the pipeline never
+# ran.
+
+import os
+import sys
+import pickle
+import string
+
+# Define a string input function for convenience.
+
+def input_str(script):
+	while True:
+		userInput = str(raw_input('%s' % (script)))
+		if len(userInput) == 1:
+			if userInput in string.letters:
+				if userInput.lower() == 'y' or userInput.lower() == 'n':		
+					break
+				print 'Please enter only "y" or "n"'
+			else:
+				print 'Please enter only letters!'
+		elif len(userInput) == 0:
+			print 'Please enter at least 1 character!'
+		elif len(userInput) >1 and userInput.isalpha():
+			print 'Please enter only 1 character!'
+		else:
+			print 'Please enter only letters and no numbers'
+	return userInput.lower()
+
+# Confirm from user if he is sure.
+
+choice = input_str("This utility will attempt restoring the folder to its original state.\nAll progress \
+including IRAF databases will be lost.\nDo you wish to continue? (y/n)")
+if choice == "y":
+	orig_file = open("originals","r")
+	orig_list = pickle.load(orig_file)
+	orig_file.close()
+
+	os.system("rm *.fits")
+	for fil in orig_list:
+		os.system("mv history/%s ." % fil)
+	
+	os.system("rm -r history")
+	os.system("rm arcindex arcfile flatlist sciencelist originals status Properties.npy")
+	os.system("rm -r database")
+
+		
+
+
+
+
+

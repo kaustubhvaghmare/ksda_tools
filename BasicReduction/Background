@@ -1,0 +1,45 @@
+#! /usr/bin/python
+# Program to enable the user to do background subtraction.
+
+# Import libraries.
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as pft
+import os,sys,glob,string,time
+import math as mth
+import pickle
+
+# Load support library functions.
+from Background_Support import *
+
+# Define the IRAF home directory.
+irafhome = '/home/kaustubh/iraf/'
+
+# Load the prefix
+status_file = open("status","r")
+prefix = pickle.load(status_file)
+status_file.close()
+
+# Load science data.
+sci_file = open("sciencelist","r")
+science_list = pickle.load(sci_file)
+sci_file.close()
+
+arcfile = open("arcfile","r")
+arc_lamp = pickle.load(arcfile)
+arcfile.close()
+
+for j in range(0,len(science_list)):
+	sciename = prefix+science_list[j]
+	background(sciename,arc_lamp)
+
+# Save status.
+status_file = open("status","w")
+prefix = "b" + prefix
+pickle.dump(prefix,status_file)
+status_file.close()
+
+

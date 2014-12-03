@@ -1,0 +1,54 @@
+August 19th, 2013
+Bug List
+==================
+
+Just a list of couple of things that could be better for developing the SALT
+spectral reduction toolkit.
+
+1) The trimming module has two major problems.
+a) The range of values acceptable from the user and trimming region boundaries
+are arbitrary and not true of actual image values.
+b) The range accepted is Pythonian array style range, it should be more
+intuitive than that. eg. first pixel should be 1 not 0. Last pixel should be
+last pixel + 1. (PROBLEM FIXED)
+
+2) The message "Program identifies that there is a spectral arc lamp" message
+seems strange and out of context. (FIXED - BETTER MESSAGE ADDED.)
+
+3) Temporary output files could all be named with a dot at the beginning so that
+they are hidden by default and the user does not have to worry about a messy
+folder full of files that are meant to serve only as the computer program's
+buffer storage. 
+
+4) A clean-up program apart from Refresh.py could be created to rid of these
+files that are only meant to be used by the toolkit program.
+
+5) Clean messages up, they are not suitable for a program that is going to be
+share. Grammer, casing, etc.
+
+6) Implement blink preview for the cosmic ray removal module.
+
+7) Implement folder independent functionality for all modules. One should not
+need to copy the modules to a folder to get them to work currently. This could
+be achieved using PYTHONPATH.
+
+8) Constant error about displaying masks for LTT****** science frame for some
+reason in the Cosmic Ray correction module. This should be looked into.
+
+9) Enclose all "kill -9" calls inside try: and except: blocks to avoid
+displaying of shell errors on screen. 
+
+10) A second execution of the Flat.py module gives errors because the
+flatlist buffer file gets modified to a different format.
+
+11) Wavelength calibration - if you say no to a spectrum, it should offer a
+chance to do it again. Instead it chooses to display spectra anyway and produce
+errors
+
+12) Flat module, possibility of an option to be added which will allow user to 
+use a ready flat instead of making one.
+
+
+
+
+

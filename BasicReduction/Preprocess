@@ -1,0 +1,74 @@
+#! /usr/bin/python
+# Program to perform two basic steps of preprocessing
+# 1) Filling gaps in science images using CCDs.
+# 2) Removing cosmic rays from them.
+
+# Import some basic modules.
+
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as pft
+import os,sys,glob,string,time
+import math as mth
+import pickle
+
+# Import the support functions.
+from Preprocess_Support import *
+
+# Define the IRAF home directory.
+irafhome = '/home/kaustubh/iraf/'
+
+# Initialize a prefix variable for keeping track of
+# the various processes done.
+prefix=""
+
+# Start by loading the file sets as determined using
+# the Understand.py module.
+# Currently, we assume that the Understand module has been executed.
+# DEVELOPER"S Note: To add support for accepting file lists in future versions
+
+scifile = open("sciencelist","r")
+science_list = pickle.load(scifile)
+scifile.close()	
+
+# Display friendly information for user
+print "Program offers 2 cosmetic processes - 1) CCD Gap Filling 2) Cosmic Ray Removal"
+
+#This section interpolates across ccd gap to get better results later when the background is subtracted
+ccdgp = input_str("Do you want to fill the ccd gaps in the science frames with a gradient function (y|n)? :")
+if (ccdgp == 'y'):
+	for j in range(0,len(science_list)):
+		ccdgpname = prefix+science_list[j]
+		ccdgap(ccdgpname)
+	prefix = 'c'+prefix
+
+#This section will use lacosmic to remove cosmic ray only on the science frames. Check the settings in the lacomic
+#function of this code to your liking
+lacos = input_str("Do you want to treat science frames for cosmic ray removal using LA cosmic module, (y|n)? :")
+mask = []
+if (lacos == 'y'):
+	for j in range(0,len(science_list)):
+		lacosname = prefix+science_list[j]
+		lacosmic(lacosname,irafhome)
+		mask.append(lacosname)
+	prefix = "la" + prefix
+
+for i in range(0,len(mask)):
+	os.system('mv %s history/' % ('mask'+mask[i]))
+
+if lacos=="y":
+	raw_input("Press any key to close the review images.")
+	try:
+		os.system("kill -9 `pidof ds9`")
+	except:
+		pass
+
+status_file = open("status","w")
+pickle.dump(prefix,status_file)
+status_file.close()
+
+
+

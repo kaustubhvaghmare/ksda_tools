@@ -1,0 +1,57 @@
+#! /usr/bin/python
+# This program will transform the science images by applying
+# the coordinate and wavelength solutiond determined from
+# the step "Identify".
+
+# Import libraries.
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as pft
+import os,sys,glob,string,time
+import math as mth
+import pickle
+
+# Load support module.
+from Transform_Support import *
+
+# Define the IRAF home directory.
+irafhome = '/home/kaustubh/iraf/'
+
+# Load arc file and science list.
+sci_file = open("sciencelist","r")
+science_list = pickle.load(sci_file)
+sci_file.close()
+
+arcfile = open("arcfile","r")
+arc_lamp = pickle.load(arcfile)
+arcfile.close()
+
+# Load the prefix.
+status_file = open("status","r")
+prefix = pickle.load(status_file)
+status_file.close()
+
+# Run transform() on all science files.
+for j in range(0,len(science_list)):
+	sciename = prefix+science_list[j]
+	transform(sciename,arc_lamp)
+
+raw_input("\n\nPlease review the transformed Science Images and Press Any Key when Done.")
+try:
+	os.system("kill -9 `pidof ds9`")
+except:
+	pass
+
+prefix = "t" + prefix
+
+status_file = open("status","w")
+pickle.dump(prefix, status_file)
+status_file.close()
+
+
+
+
+

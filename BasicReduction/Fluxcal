@@ -1,0 +1,73 @@
+#! /usr/bin/python
+
+# Basic library imports.
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as pft
+import os,sys,glob,string,time
+import math as mth
+import pickle
+
+# Load supporter functions
+from Fluxcal_Support import *
+
+# Define IRAF home.
+irafhome = '/home/kaustubh/iraf/'
+
+# Load all science data files.
+#Load the prefix
+status_file = open("status","r")
+prefix = pickle.load(status_file)
+status_file.close()
+
+# Load science data.
+sci_file = open("sciencelist","r")
+science_list = pickle.load(sci_file)
+sci_file.close()
+
+# Display image names to the user.
+for i, name in enumerate(science_list):
+	print "%d) %s\n" % (i+1,name)
+id = input_val("Enter the number indictating the standard star: ", 1,len(science_list)+1)
+
+if id not in range(len(science_list)):
+	print "Invalid Input. Program failed."
+	sys.exit(2)
+
+# Get name of the standard star.
+id -= 1
+std_name = prefix + science_list[id]
+
+# Extract star spectrum
+apall(std_name)
+
+# Standardize the star.
+name = raw_input("Please enter name of star: ")
+do_calibration(std_name,name)
+
+# Create a list of science images sans photometric stars.
+final_list = science_list[:id] + science_list[id+1:]
+
+for sci in final_list:
+	calibrate(prefix + sci)
+
+print "All individual Science Images have been calibrated."
+if os.path.isfile("combined"):
+	print "Combined Science Frame detected. Applying solution to the same."
+	com = open("combined","r")
+	comname = pickle.load(com)
+	com.close()
+	calibrate(comname)
+
+
+	
+
+	
+
+
+
+
+

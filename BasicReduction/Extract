@@ -1,0 +1,95 @@
+#! /usr/bin/python
+
+# Program that allows aperture extraction.
+# It will offer to  extract apertures from all science
+# frames OR
+# It will offer to extract aperture from a combined frame.
+
+# Basic library imports.
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as pft
+import os,sys,glob,string,time
+import math as mth
+import pickle
+
+# Import support library
+
+from Extract_Support import *
+
+# Define IRAF home.
+irafhome = '/home/kaustubh/iraf/'
+
+# Load all science data files.
+#Load the prefix
+status_file = open("status","r")
+prefix = pickle.load(status_file)
+status_file.close()
+
+# Load science data.
+sci_file = open("sciencelist","r")
+science_list = pickle.load(sci_file)
+sci_file.close()
+
+# Get user confirmation about extraction mode.
+print "You can either extract spectra from each frame or from combined frame."
+mode = input_str("Do you wish to extract spectra from each science frame? (y/n): ")
+if mode == "y":
+	# Code for each spectra extraction.
+
+	# Display image names to the user.
+	for i, name in enumerate(science_list):
+		print "%d) %s\n" % (i+1,name)
+
+	print "List of all science frames have been displayed."
+	id = input_val("Isolate the Specphoto-standard: ", 0, len(science_list)+1)
+
+	if id not in range(len(science_list)):
+		print "Invalid Input. Program failed."
+		sys.exit(2)
+	id -=1
+	final_list = science_list[:id] + science_list[id+1:]
+	
+	count = 0
+	for j in range(0,len(final_list)):
+		count = count+1
+		apname = prefix+final_list[j]
+		if (count==1): 	apname1 = apname
+		apall(apname,count,apname1)
+	
+	prefix = 'til'+prefix
+	status_file = open("status","r")
+	pickle.dump(prefix,status_file)
+	status_file.close()
+
+elif mode == "n":
+	# Code for combined spectra extraction.
+	if os.path.isfile("combined"):
+		print "Combined Science Frame detected. Performing extraction."
+		com = open("combined","r")
+		comname = pickle.load(com)
+		com.close()
+		newname = extract(comname)
+		
+		os.system("rm combined")
+		com = open("combined","w")
+		pickle.dump(newname,com)
+		com.close()
+	else:
+		print "Sorry. No combined file found. Exiting..."
+		sys.exit(3)
+
+
+
+
+
+
+
+
+
+
+
+

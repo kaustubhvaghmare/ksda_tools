@@ -1,0 +1,125 @@
+#! /usr/bin/python
+# First step in spectral reduction.
+# Understanding the data.
+# This basically invovles looking at all the FITS files.
+# Understanding which ones are FLAT fields
+# Which ones are ARCS
+# Which ones are Sciences Images.
+
+# Basic library imports.
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as pft
+import os,sys,glob,string,time
+import math as mth
+import pickle
+
+
+
+# Load supporter functions.
+
+from Understand_Support import *
+
+# Define the IRAF home directory.
+irafhome = '/home/kaustubh/iraf/'
+
+
+# Confirm if some history folder exists and offer backup
+if os.path.isdir("history"):
+	back_choice = input_str("A history directory has been found. It will be deleted. Backup before deletion? (y/n)")
+	if back_choice == "y":
+		t = os.path.getctime("history")
+		new_name = "history_" + time.strftime("%Y%m%d%H%M%S", time.localtime(t))
+		os.system("mv history %s" % new_name)
+		os.system("mkdir history")
+	else:
+		os.system("rm -r history")
+		os.system("mkdir history")
+else:
+	os.system("mkdir history")
+
+# Take all FITS files in the current directory and rename them 
+# according to their object type.
+
+files = glob.glob('*fits')
+#renaming the files to more appropriate names!
+for i in range(0,len(files)):
+	out = rename(files[i])
+	if out == 1:
+		os.system('mv %s history/' % (files[i]))
+
+# Save the list of files in a Picke list.
+original_file = open("originals","w")
+pickle.dump(files,original_file)
+original_file.close()
+
+# Offer the user a chance to trim the data.
+# Applying trimming if necessary
+prefix = ""
+files = glob.glob('*fits')
+os.system('ds9 %s -zscale &' % (files[0]))
+trim_ans = input_str("Do you want to apply any trimming (y|n)?")
+if trim_ans == 'y':
+	satis = 'n'
+	while satis == 'n' or satis =='no':
+		y0 = input_val('Enter the first y-coord, y0',0,2500)
+		y1 = input_val('Enter the second y-coord, y1',y0,2500)
+		x0 = input_val('Enter the first x-coord, x0',0,3180)
+		x1 = input_val('Enter the second x-coord, x1',x0,3180)
+		satis = input_str('Are you satisfied with the coordinate input(y or n): ')
+	x = [x0,x1] ; y = [y0,y1]
+	for i in range(0,len(files)):
+		trim(files[i],x,y)
+	prefix += "tr"
+try:
+	os.system("kill -9 `pidof ds9`")
+except:
+	pass
+
+# Probe general properties of the object and
+# Saving the properties of the fits files in an array
+files = glob.glob('*fits')
+properties = [] 
+for i in range(0,len(files)):
+	properties.append(info_fits(files[i]))
+properties = np.array(properties) # array with all the properties of the data observed
+# Properties include name of the file, naxis2, lamp id, object, gr angle, name of the object.
+np.save("Properties", properties)
+
+flat_detec = 'no'
+science_list = [] ; flat_list = []
+#creating list for each types of files: science, flats.
+for j in range(0,len(properties)):
+	test = properties[j,5]
+	if test == 'ARC':
+		ident = j
+		arc_file = properties[j,0]
+		print 'Arc Lamp Found - %s' % arc_file
+	elif test == 'FLAT':
+		flat_detec = 'yes'
+		flat_list.append(properties[j,0])
+	elif test != 'ERROR':
+		science_list.append(properties[j,0])
+
+arcindex = open("arcindex","w")
+arcfile = open("arcfile","w")
+flatfile = open("flatlist","w")
+scifile = open("sciencelist","w")
+pickle.dump(ident, arcindex)
+pickle.dump(arc_file, arcfile)
+pickle.dump(flat_list, flatfile)
+pickle.dump(science_list, scifile)
+arcindex.close()
+arcfile.close() 
+flatfile.close() 
+scifile.close() 
+
+
+
+
+
+
+

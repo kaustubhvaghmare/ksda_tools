@@ -1,0 +1,87 @@
+#! /usr/bin/python
+
+# A module usable for combining main science frames into one.
+# Uses average combination along with an average-sigma clipping
+# algorithm for identification and removal of outliers.
+
+# Basic library imports.
+
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as pft
+import os,sys,glob,string,time
+import math as mth
+import pickle
+
+from Combine_Support import *
+
+irafhome = '/home/kaustubh/iraf/'
+
+# Get science image list.
+sci_file = open("sciencelist","r")
+science_list = pickle.load(sci_file)
+sci_file.close()
+
+#Load the prefix
+status_file = open("status","r")
+prefix = pickle.load(status_file)
+status_file.close()
+
+# Display image names to the user.
+for i, name in enumerate(science_list):
+	print "%d) %s\n" % (i+1,name)
+
+print "List of all science frames have been displayed."
+try:
+	argument = sys.argv[1]
+except: 
+	argument = ""
+
+if argument == "":
+	id = input_val("Isolate the Specphoto-standard: ", 0, len(science_list)+1)
+
+	if id not in range(len(science_list)):
+		print "Invalid Input. Program failed."
+		sys.exit(2)
+
+	id -=1
+	final_list = science_list[:id] + science_list[id+1:]
+	string_list = ""
+	for i in range(len(final_list)):
+		if i!= (len(final_list)-1):
+			string_list =  string_list + prefix + final_list[i]+","
+		else:
+			string_list = string_list + prefix + final_list[i]
+	temp = string_list.replace(","," -zscale ")
+	os.system("ds9 %s -zscale -blink &")
+	review = raw_input("Do you wish to combine images?")
+	if review == "y" or review == "Y":
+		com_name = raw_input("Please enter a name for combined file: ")
+		Combine(string_list, com_name)
+
+comfile = open("combined","w")
+pickle.dump(com_name,comfile)
+comfile.close()
+
+
+#if argument == "select":
+	
+
+
+
+
+
+		
+
+
+
+	
+
+	
+	
+
+
+

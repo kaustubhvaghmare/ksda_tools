@@ -1,0 +1,126 @@
+#! /usr/bin/python
+# Program to perform the flat fielding.
+# The user is a given a choice in the end as to whether
+# he would like further processing to take place
+# on flat-fielded images or unflat ones!
+
+# Import libraries.
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as pft
+import os,sys,glob,string,time
+import math as mth
+import pickle
+
+# Import supporting functions
+from Flat_Support import *
+
+# Define the IRAF home directory.
+irafhome = '/home/kaustubh/iraf/'
+
+
+# Load the prefix
+status_file = open("status","r")
+prefix = pickle.load(status_file)
+status_file.close()
+
+# Load the flat field image list.
+flat_file = open("flatlist","r")
+flat_list = pickle.load(flat_file)
+flat_file.close()
+
+# Load science data.
+sci_file = open("sciencelist","r")
+science_list = pickle.load(sci_file)
+sci_file.close()
+
+# The program will allow an argument called "noprocess"
+# This tells the program that the flats don't need to be computed
+# but only a division needs to be performed.
+
+try:
+	argument = sys.argv[1]
+	argument = argument.lower()
+except:
+	argument = ""
+
+if argument == "noprocess":
+	print "Flat file found called %s" % flat_list[0]
+	confirm = input_str("Assume this as a normalized flat and flat-field the science frames?")
+
+	if confirm == "y":
+		for j in range(0,len(science_list)):
+			divide(prefix+science_list[j],flat_list[0] ,2)
+		print "Versions of images both with and without flat-field correction exist."
+		flat_choice = input_str("Would you like to use flat-field corrected images for future analysis? (y/n) :")
+
+		if flat_choice == "y":
+			prefix = "fl" + prefix
+			print "Future reduction modules will use Flat-Fielded versions. To revert decision, you can run 'use_unflat'."
+		else:
+			print "Flat-fielded images are available but you have opted not to use them. To revert decision, you can run 'useflat'."
+
+		status_file = open("status","w")
+		pickle.dump(prefix,status_file)
+		status_file.close()
+		sys.exit(0)
+	else:
+		custom_flat = raw_input("Please enter name of the flat file: ")
+		if os.path.isfile(custom_flat):
+			for j in range(0,len(science_list)):
+				divide(prefix+science_list[j],custom_flat,2)
+			flatprefix = 'fl'+prefix
+			print "Versions of images both with and without flat-field correction exist."
+			flat_choice = input_str("Would you like to use flat-field corrected images for future analysis? (y/n) :")
+	
+			if flat_choice == "y":
+				prefix = "fl" + prefix
+				print "Future reduction modules will use Flat-Fielded versions. To revert decision, you can run 'use_unflat'."
+			else:
+				print "Flat-fielded images are available but you have opted not to use them. To revert decision, you can run 'useflat'."
+			status_file = open("status","w")
+			pickle.dump(prefix,status_file)
+			status_file.close()
+			sys.exit(0)
+		else:
+			print "File does not exist. Aborting"
+			sys.exit(1)
+
+elif argument == "":
+	pass
+else:
+	print "Wrong Argument."
+	sys.exit(1)
+		
+
+
+if flat_file == []:
+	print "No flat fields in your data."
+	sys.exit()
+else:
+	flat(flat_list)
+	for j in range(0,len(science_list)):
+		divide(prefix+science_list[j],'master_flat.fits',2)
+	flatprefix = 'fl'+prefix
+
+os.system("ds9 master_flat.fits -zscale &")
+
+print "Please review the master flat shown."
+print "Versions of images both with and without flat-field correction exist."
+flat_choice = input_str("Would you like to use flat-field corrected images for future analysis? (y/n) :")
+
+if flat_choice == "y":
+	prefix = "fl" + prefix
+	print "Future reduction modules will use Flat-Fielded versions. To revert decision, you can run 'use_unflat'."
+else:
+	print "Flat-fielded images are available but you have opted not to use them. To revert decision, you can run 'useflat'."
+
+status_file = open("status","w")
+pickle.dump(prefix,status_file)
+status_file.close()
+		
+	
+ 

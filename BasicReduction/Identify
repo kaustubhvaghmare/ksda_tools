@@ -1,0 +1,34 @@
+#! /usr/bin/python
+# Program to identify the arc lamp
+
+# Basic library imports.
+
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as pft
+import os,sys,glob,string,time
+import math as mth
+import pickle
+
+from Identify_Support import *
+
+irafhome = '/home/kaustubh/iraf/'
+
+arcfile = open("arcfile","r")
+arc_lamp = pickle.load(arcfile)
+arcfile.close()
+
+arcindex = open("arcindex","r")
+ident = pickle.load(arcindex)
+arcindex.close()
+
+properties = np.load("Properties.npy")
+
+arc_lamp = input_str("Do you want to identify the arc lamp (y|n)? :")
+if (arc_lamp != ""):
+	identify(properties,ident,irafhome)
+
+
