@@ -1,4 +1,4 @@
-# Support library for Extract
+ Support library for Extract
 
 # Import libraries.
 import numpy as np
@@ -86,6 +86,7 @@ def apall(apname,jj,refnam):
 
 # Combined Extraction Code.
 def extract(comname):
+	# Deal with combined spectrum's extraction.
 	outname = "ex" + comname
 	refname = ""
 	interap = "yes"
@@ -101,9 +102,22 @@ def extract(comname):
 						backgro='none',skybox=1,weights='none',pfit='fit1d',clean='no',saturat='INDEF',
 						readnoi=0.,gain=1.,lsigma=4.,usigma=4.,nsubaps=1.,mode='ql')
 
+	# Deal with error frame extraction.
+	iraf.noao.twodspec.apextract.apall(input=comname+"_std.fits",output=outname+"_err.fits", apertur='',format='strip',referen=comname,profile='',
+						interac=interap,find=interap,recente=interap,resize=interap,edit=interap,trace=interap,
+						fittrac=interap,extract='yes',extras='no',review='no',line=500,nsum=30,
+						lower=-5.,upper=12.,apidtab='',b_funct='chebyshev',b_order=1,b_sampl='-60:-40,40:60',
+						b_naver=-3,b_niter=0,b_low_r=3.,b_high_=3.,b_grow=0.,width=5.,radius=10.,
+						thresho=0.,nfind=1,minsep=35.,maxsep=100000.,order='increasing',aprecen='',
+						npeaks='INDEF',shift='yes',llimit=-15,ulimit=15,ylevel=0.1,peak='yes',
+						bkg='yes',r_grow=0.,avglimi='no',t_nsum=45,t_step=30,t_nlost=10,t_funct='spline3',
+						t_order=3,t_sampl='*',t_naver=1,t_niter=0,t_low_r=3.,t_high_=3.,t_grow=0.,
+						backgro='none',skybox=1,weights='none',pfit='fit1d',clean='no',saturat='INDEF',
+						readnoi=0.,gain=1.,lsigma=4.,usigma=4.,nsubaps=1.,mode='ql')
+
 	namesplit = string.split(outname,'.')
 	os.system('ds9 %s &' % (namesplit[0]+'.0001.fits'))
-	satis = input_str("Are satisfied with the extracted spectra (y|n)?")
+	satis = input_str("Are you satisfied with the extracted spectra (y|n)?")
 	if (satis == 'n'):
 		askdel = input_str("Delete the spectra (y|n)?")
 		if (askdel == 'y'):
@@ -111,9 +125,3 @@ def extract(comname):
 	else:
 		os.system('mv %s history/' % (comname))
 	return namesplit[0]+'.0001.fits'
-
-
-
-
-
-

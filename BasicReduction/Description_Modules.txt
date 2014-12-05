@@ -29,6 +29,7 @@ Combine
 - allows user to combine the science frames (background subtracted, generally) 
 into a single science frame using average combination along with average-sigma
 clipping for outlier rejection.
+- also combine science frame into a standard deviations image.
 
 Extract
 - allows user to perform extraction on individual science frames.

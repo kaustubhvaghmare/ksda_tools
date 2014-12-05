@@ -101,6 +101,5 @@ def lacosmic(name,irafhome):
 	old = time.time()
 	os.system('ds9 %s -zscale %s -zscale -blink &' % (pl,name))
 	os.system('ds9 %s -zscale &' % outname)
-	os.system('mv %s history/' % (name))
 	return
 

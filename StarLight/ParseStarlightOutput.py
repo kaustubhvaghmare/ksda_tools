@@ -44,7 +44,7 @@ age = np.zeros(len(aperture_table), dtype=float)
 vel0 = np.zeros(len(aperture_table), dtype=float)
 veldisp = np.zeros(len(aperture_table), dtype=float)
 
-fig1 = plt.figure(1, figsize=(12,6))
+fig5 = plt.figure(5, figsize=(12,6))
 
 for i, spec in enumerate(aperture_table["col1"]):
 
@@ -74,7 +74,7 @@ for i, spec in enumerate(aperture_table["col1"]):
 	ax2.set_ylabel("Residue", fontsize=18)
 	ax2.set_xlim(low, high)
 	ax2.grid(which="both")
-	fig1.savefig(spec[:-5]+"_mod.png", dpi=150)
+	fig5.savefig(spec[:-5]+"_mod.png", dpi=150)
 	plt.clf()
 
 # Make plots.

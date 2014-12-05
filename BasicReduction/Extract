@@ -59,9 +59,10 @@ if mode == "y":
 		apname = prefix+final_list[j]
 		if (count==1): 	apname1 = apname
 		apall(apname,count,apname1)
+		os.system("mv %s history/" % apname)
 	
-	prefix = 'til'+prefix
-	status_file = open("status","r")
+	prefix = 'ex'+prefix
+	status_file = open("status","w")
 	pickle.dump(prefix,status_file)
 	status_file.close()
 

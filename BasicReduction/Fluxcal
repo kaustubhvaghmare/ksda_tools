@@ -39,7 +39,7 @@ if id not in range(len(science_list)):
 
 # Get name of the standard star.
 id -= 1
-std_name = prefix + science_list[id]
+std_name = prefix[2:] + science_list[id]
 
 # Extract star spectrum
 apall(std_name)
@@ -52,9 +52,18 @@ do_calibration(std_name,name)
 final_list = science_list[:id] + science_list[id+1:]
 
 for sci in final_list:
-	calibrate(prefix + sci)
+	name = sci.split(".")[0]+".0001.fits"
+	calibrate(prefix + name)
+	os.system("mv %s history/" % (prefix+name))
 
 print "All individual Science Images have been calibrated."
+
+prefix = "cal_" + prefix
+status_file = open("status","w")
+pickle.dump(prefix,status_file)
+status_file.close()
+
+
 if os.path.isfile("combined"):
 	print "Combined Science Frame detected. Applying solution to the same."
 	com = open("combined","r")
@@ -62,12 +71,6 @@ if os.path.isfile("combined"):
 	com.close()
 	calibrate(comname)
 
-
-	
-
-	
-
-
-
-
-
+update_scifile = open("sciencelist", "w")
+pickle.dump(science_list, update_scifile)
+update_scifile.close()

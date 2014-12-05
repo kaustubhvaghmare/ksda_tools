@@ -1,0 +1,63 @@
+#! /usr/bin/python
+
+# Program to foreground correct all spectra in the current directory
+
+# Basic library imports.
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as pft
+import os,sys,glob,string,time
+import math as mth
+import pickle
+from astroquery.ned import Ned
+from ned_extinction_calc import request_extinctions
+
+
+# Define IRAF home.
+irafhome = '/home/kaustubh/iraf/'
+
+# Load all science data files.
+#Load the prefix
+status_file = open("status","r")
+prefix = pickle.load(status_file)
+status_file.close()
+
+# Load science data.
+sci_file = open("sciencelist","r")
+science_list = pickle.load(sci_file)
+sci_file.close()
+
+# Parse command line arguments if provided.
+try:
+	object_name = sys.argv[1]
+except:
+	object_name = raw_input("Provide object name: ").rstrip()
+
+# Get coordinates of the object.
+try:
+	ned_results = Ned.query_object(object_name)
+	ra = ned_results["RA(deg)"][0]
+	dec = ned_results["DEC(deg)"][0]
+except:
+	print("Sorry! Unable to find an object of this name. Please provide RA and DEC.")
+	ra = float(raw_input("Enter RA (deg): "))
+	dec = float(raw_input("Enter DEC (deg): "))
+
+# RA and DEC have been obtained, it is time to get the Av value needed by IRAF for extinction.
+extinctions = request_extinctions(ra, dec, filters=("Landolt V",))
+av = extinctions[0]
+
+for sci in science_list:
+	name = prefix+sci.split(".")[0] + ".0001.fits"
+	noao.twodspec.longslit.deredden(input=name, output="fg"+name, value=av, type="A(V)")
+	os.system("mv %s history/" % name)
+
+prefix = "fg" + prefix
+status_file = open("status","w")
+pickle.dump(prefix,status_file)
+status_file.close()
+
+

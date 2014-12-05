@@ -50,7 +50,7 @@ def input_str(script):
 	return userInput.lower()
 
 def apall(apname):
-	outname = 'til'+apname
+	outname = 'ex'+apname
 	refname = ""
 	interap="yes"
 
@@ -80,11 +80,11 @@ def apall(apname):
 
 ## The standardisation module.
 def do_calibration(std_name,starname):
-	outname = 'til'+std_name
+	outname = 'ex'+std_name
 	namesplit = string.split(outname,'.')
 	std_specname = namesplit[0]+'.0001.fits'
 	iraf.noao.twodspec.longslit.standard(input=std_specname, output="std", samestar="yes", beam_switch="no", apertures="", bandwidth="INDEF",
-					    bandsep="INDEF", fnuzero=3.68e-20, extinction=irafhome+"suth_extinct.dat",interact="yes", 
+					    bandsep="INDEF", fnuzero=1.0, extinction=irafhome+"suth_extinct.dat",interact="yes", 
 					    star_name=starname)
 	
 	iraf.noao.twodspec.longslit.sensfunc(standards="std", sensitivity="sens", apertures="", ignoreaps="yes", logfile="logfile", 

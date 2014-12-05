@@ -1,0 +1,99 @@
+#! /usr/bin/python
+# Program designed to test whether all spectra are at the same level.
+# This needs to be done especially because SALT has a variable pupil.
+# As a result of this, even though the integration times are equal, 
+# the effective exposure time changes owing to the varying aperture. 
+# So, one needs to account for this.
+
+# Import libraries.
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as fits
+import os,sys,glob,string,time
+import math as mth
+import pickle
+import matplotlib.pyplot as plt
+
+# Load support functions.
+from LevelImages_Support import *
+
+# Define the IRAF home directory.
+irafhome = '/home/kaustubh/iraf/'
+
+# Load the prefix
+status_file = open("status","r")
+prefix = pickle.load(status_file)
+status_file.close()
+
+# Load science data.
+sci_file = open("sciencelist","r")
+science_list = pickle.load(sci_file)
+sci_file.close()
+
+# Display image names to the user.
+for i, name in enumerate(science_list):
+	print "%d) %s\n" % (i+1,name)
+id = input_val("Enter the number indictating the standard star: 0 if none present: ", 0,len(science_list)+1)
+
+# And remove the calibration star spectrum from science list temporarily.
+if id!=0:
+	id -= 1
+	spec_star = science_list[id]
+	science_list.pop(id)
+
+
+# Define a centroiding algorithm, use it get a central row.
+def GetCentroid( spatial_points, intensities):
+	return np.sum(spatial_points * intensities)/np.sum(intensities)
+
+input_files = [ prefix+i for i in science_list ]
+# Now, get modes for all input science images at their centres.
+maxs = np.ones(len(input_files), dtype=float)
+fig1 = plt.figure(1,figsize=(12,6))
+for i,f in enumerate(input_files):
+	hdulist = fits.open(f)
+	header = hdulist[0].header
+	data = hdulist[0].data
+	if i==0:
+		centroid =  GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
+		central_row = int(round(centroid, 0))
+	maxs[i] = np.max(data[central_row, :])
+	plt.plot(data[central_row, :], label=f)
+
+plt.title("Before applying equalization.")
+plt.legend()
+fig1.show()
+raw_input("Press any key to apply equalization.")
+
+max_max = np.argmax(maxs)
+scaling_factors = maxs / maxs[max_max]
+
+fig2 = plt.figure(2,figsize=(12,6))
+for i,f in enumerate(input_files):
+	hdulist = fits.open(f)
+	header = hdulist[0].header
+	data = hdulist[0].data
+	if i==0:
+		centroid =  GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
+		central_row = int(round(centroid, 0))
+	plt.plot(data[central_row, :]/scaling_factors[i], label=f)
+
+plt.legend()
+fig2.show()
+choice = raw_input("Are you happy with the equalization obtained (y/n)?").lower()
+
+if choice=="y":
+	for i, f in enumerate(input_files):
+		iraf.images.imutil.imarith(operand1=f, op="/",
+									operand2=scaling_factors[i], 
+									result="n"+f)
+		os.system("mv %s history/" % f)
+
+	os.system("mv %s n%s" % (prefix+spec_star, prefix+spec_star) )
+	prefix = "n" + prefix
+	status_file = open("status","w")
+	pickle.dump(prefix,status_file)
+	status_file.close()

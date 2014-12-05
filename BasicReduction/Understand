@@ -48,8 +48,8 @@ files = glob.glob('*fits')
 #renaming the files to more appropriate names!
 for i in range(0,len(files)):
 	out = rename(files[i])
-	if out == 1:
-		os.system('mv %s history/' % (files[i]))
+	#if out == 1:
+	os.system('mv %s history/' % (files[i]))
 
 # Save the list of files in a Picke list.
 original_file = open("originals","w")

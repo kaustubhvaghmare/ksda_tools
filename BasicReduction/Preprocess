@@ -54,13 +54,13 @@ if (lacos == 'y'):
 		lacosname = prefix+science_list[j]
 		lacosmic(lacosname,irafhome)
 		mask.append(lacosname)
-	prefix = "la" + prefix
 
-for i in range(0,len(mask)):
-	os.system('mv %s history/' % ('mask'+mask[i]))
+	for i in range(0,len(mask)):
+		os.system('mv %s history/' % ('mask'+mask[i]))
+		os.system('mv %s history/' % (prefix+science_list[i]))
 
-if lacos=="y":
 	raw_input("Press any key to close the review images.")
+	prefix = "la" + prefix
 	try:
 		os.system("kill -9 `pidof ds9`")
 	except:

@@ -48,10 +48,5 @@ def input_str(script):
 
 # Define the combine function.
 def Combine(list_string, com_name):
-	iraf.images.immatch.imcombine(input=list_string, output=com_name, combine="average", reject="avsigclip", project="no", 
-					outtype="real", lsigma=3.0, hsigma=3.0)
-
-
-
-
-	
+	iraf.images.immatch.imcombine(input=list_string, output=com_name, sigma=com_name+"_std.fits", combine="average", 
+							reject="avsigclip", project="no", outtype="real", lsigma=3.0, hsigma=3.0)
