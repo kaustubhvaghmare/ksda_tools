@@ -3,6 +3,7 @@
 
 from astropy.table import Table
 import matplotlib.pyplot as plt
+from MatplotlibCustom import *
 import numpy as np
 import sys
 import scipy.interpolate as si
@@ -31,8 +32,8 @@ fig1.show()
 dum = raw_input("Press any key to continue fitting.")
 
 # Some parameters for the spline function.
-spline_order = 5
-spline_smooth = 5
+spline_order = 1
+spline_smooth = 1
 
 # Get sorted element indices for x-axis variable. It is the requirement of the
 # function being used for Spline Fitting that the X be in an increasing order.
