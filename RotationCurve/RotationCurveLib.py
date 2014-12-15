@@ -27,7 +27,7 @@ def read_spectrum(filename):
 	data = hdulist[0].data
 	wcs = pw.WCS(header)
 	wavelengths =  wcs.wcs_pix2world( [ [i+0.5,1] for i in range( header["NAXIS1"] )] ,1 )
-	wavelengths = [ wavelengths[i][0] for i in range(len(wavelengths)) ]
+	wavelengths = np.array( [ wavelengths[i][0] for i in range(len(wavelengths)) ] )
 
 	return header, data, wavelengths
 
@@ -134,13 +134,19 @@ def input_str(script):
 
 # An object input file parser.
 def ObjectInformation(header):
-	h,m,s = [ float(i) for i in header["RA"].split(":") ]
-	ra = 15*(h + m/60.0 + s/3600.0)
-	d,m,s = [ float(i) for i in header["DEC"].split(":") ]
-	if d<0:
-		dec = (d + m/60.0 + s/3600.0)*-1.0
-	else:
-		dec = (d + m/60.0 + s/3600.0)
+	try:
+		h,m,s = [ float(i) for i in header["RA"].split(":") ]
+		ra = 15*(h + m/60.0 + s/3600.0)
+	except:
+		ra = float(header["RA"])
+	try:
+		d,m,s = [ float(i) for i in header["DEC"].split(":") ]
+		if d<0:
+			dec = (d + m/60.0 + s/3600.0)*-1.0
+		else:
+			dec = (d + m/60.0 + s/3600.0)
+	except:
+		dec = float(header["DEC"])
 	
 	time_string = header["DATE-OBS"] + " " + header["UTC-OBS"]
 	t = time.Time(time_string)
@@ -172,3 +178,15 @@ def CurveParams(filename):
 	speed_light = c.getfloat("CurveParameters","speedlight")
 
 	return stepsize, nsum, uppercut, pixel_scale, speed_light
+
+def FilterErrorBars(x_err):
+	"""
+	Input: x and x_err
+	Output: x and x_err filtered of insane error bars.
+	Notes: Not meant to be a general function. Have some specific nuances
+	meant for this.
+	"""
+	x_err = np.array(x_err)
+	med = np.median(x_err)
+	desired = ( x_err <= 2*med )
+	return desired
