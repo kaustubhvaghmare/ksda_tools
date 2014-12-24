@@ -48,5 +48,11 @@ def input_str(script):
 
 # Define the combine function.
 def Combine(list_string, com_name):
-	iraf.images.immatch.imcombine(input=list_string, output=com_name, sigma=com_name+"_std.fits", combine="average", 
+	no_images = len(list_string.split(","))
+	iraf.images.immatch.imcombine(input=list_string, output=com_name, sigma=com_name+"_tempstd.fits", combine="average", 
 							reject="avsigclip", project="no", outtype="real", lsigma=3.0, hsigma=3.0)
+	# Modify _tempstd.fits image to truly reflect the error bars.
+	iraf.stsdas.toolbox.imgtools.imcalc(input=com_name+"_tempstd.fits", output=com_name+"_tempstd2.fits", equals="im1**2")
+	iraf.stsdas.toolbox.imgtools.imcalc(input=com_name+"_tempstd2.fits", output=com_name+"_tempstd3.fits", equals="im1/%d" % no_images)
+	iraf.stsdas.toolbox.imgtools.imcalc(input=com_name+"_tempstd3.fits", output=com_name+"_err.fits", equals="sqrt(im1)")
+	os.system("rm %s_tempstd*.fits" % com_name)

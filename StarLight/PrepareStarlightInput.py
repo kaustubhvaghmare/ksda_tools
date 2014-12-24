@@ -54,7 +54,7 @@ initial_vdisp = 150
 # Construct the result
 grid_rest = ""
 for spec in aperture_table["col1"]:
-	grid_rest += "%s   %s   %s   %s   %s   %s   %s   %s\n" % (spec[:-5]+".dat", standard_config,
+	grid_rest += "%s   %s   %s   %s   %s   %s   %s   %s\n" % (spec, standard_config,
 	base_file, common_mask, redenning_law, initial_vel, initial_vdisp, spec[:-4]+"out")
 
 outfile = open(filename[:-5]+"_grid.in","w")
