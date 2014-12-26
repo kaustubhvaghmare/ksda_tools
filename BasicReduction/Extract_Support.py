@@ -12,8 +12,7 @@ import math as mth
 import pickle
 
 # Define the IRAF home directory.
-irafhome = '/home/kaustubh/iraf/'
-
+from IRAFHome import *
 
 def input_val(script,lim1,lim2):
 	while True:

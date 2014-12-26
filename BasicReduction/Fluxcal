@@ -15,7 +15,7 @@ import pickle
 from Fluxcal_Support import *
 
 # Define IRAF home.
-irafhome = '/home/kaustubh/iraf/'
+from IRAFHome import *
 
 # Load all science data files.
 #Load the prefix

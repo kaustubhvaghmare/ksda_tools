@@ -12,7 +12,7 @@ import os,sys,glob,string,time
 import math as mth
 import pickle
 
-irafhome = '/home/kaustubh/iraf/'
+from IRAFHome import *
 
 def identify(properties,index,irafhome):
 	satis = 'n'

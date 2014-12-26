@@ -12,8 +12,7 @@ import os,sys,glob,string,time
 import math as mth
 import pickle
 
-irafhome = '/home/kaustubh/iraf/'
-
+from IRAFHome import *
 
 # Basic input functions.
 def input_val(script,lim1,lim2):

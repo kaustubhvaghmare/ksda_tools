@@ -15,7 +15,7 @@ import pickle
 from Flat_Support import *
 
 # Define the IRAF home directory.
-irafhome = '/home/kaustubh/iraf/'
+from IRAFHome import *
 
 # Basic input / output functions.
 def input_val(script,lim1,lim2):

@@ -18,7 +18,7 @@ import pickle
 from Transform_Support import *
 
 # Define the IRAF home directory.
-irafhome = '/home/kaustubh/iraf/'
+from IRAFHome import *
 
 # Load arc file and science list.
 sci_file = open("sciencelist","r")

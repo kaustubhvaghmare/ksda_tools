@@ -10,7 +10,7 @@ import math as mth
 import pickle
 
 # Define the IRAF home directory.
-irafhome = '/home/kaustubh/iraf/'
+from IRAFHome import *
 
 def background(sciname,filename):
 	print "Working on %s." % sciname

@@ -15,7 +15,7 @@ import pickle
 
 from Identify_Support import *
 
-irafhome = '/home/kaustubh/iraf/'
+from IRAFHome import *
 
 arcfile = open("arcfile","r")
 arc_lamp = pickle.load(arcfile)

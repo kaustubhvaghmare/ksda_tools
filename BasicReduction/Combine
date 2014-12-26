@@ -17,8 +17,7 @@ import math as mth
 import pickle
 
 from Combine_Support import *
-
-irafhome = '/home/kaustubh/iraf/'
+from IRAFHome import *
 
 # Get science image list.
 sci_file = open("sciencelist","r")

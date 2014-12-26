@@ -12,7 +12,7 @@ import math as mth
 import pickle
 
 # Define the IRAF home directory.
-irafhome = '/home/kaustubh/iraf/'
+from IRAFHome import *
 
 def transform(sciname,filename):
 	# taking the arc file name and using it as the reference input for transformation

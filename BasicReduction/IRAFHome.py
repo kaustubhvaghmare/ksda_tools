@@ -1,0 +1,1 @@
+irafhome="/home/kaustubh/iraf"

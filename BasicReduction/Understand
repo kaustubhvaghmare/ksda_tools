@@ -20,12 +20,10 @@ import pickle
 
 
 # Load supporter functions.
-
 from Understand_Support import *
 
 # Define the IRAF home directory.
-irafhome = '/home/kaustubh/iraf/'
-
+from IRAFHome import *
 
 # Confirm if some history folder exists and offer backup
 if os.path.isdir("history"):

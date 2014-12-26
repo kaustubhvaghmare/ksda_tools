@@ -19,8 +19,7 @@ import pickle
 from Flat_Support import *
 
 # Define the IRAF home directory.
-irafhome = '/home/kaustubh/iraf/'
-
+from IRAFHome import *
 
 # Load the prefix
 status_file = open("status","r")
