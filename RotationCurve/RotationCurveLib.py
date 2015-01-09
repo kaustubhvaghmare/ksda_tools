@@ -7,7 +7,7 @@ from astropy.io import fits
 import astropy.wcs as pw
 import matplotlib.pyplot as plt
 import numpy as np
-from lmfit.models import GaussianModel, ConstantModel
+from lmfit.models import GaussianModel, LinearModel
 import string
 import ConfigParser
 from astropy import time
@@ -71,12 +71,13 @@ def Wavelength2Pixels(header, *args):
 	pixels = [ pixels[i][0] for i in range(len(pixels)) ]
 	return pixels
 
-def FitGaussians(x, y, y_err, num):
+def FitGaussians(x, y, y_err, num, rest_wavelengths=False):
 	"""
 	Input: x, generally wavelengths.
 	       y, generally flux
 		   y_err, errors on y
 		   num: number of Gaussians to fit
+		   rest_wavelengths: used for computing constraints on Gaussian fits
 	Output: Mean Centroid, Error on Mean Centroid
 	"""
 	# First, define a model.
@@ -85,7 +86,7 @@ def FitGaussians(x, y, y_err, num):
 	while components != num:
 		mod = mod + GaussianModel(prefix="g%d_" % (components+1))
 		components += 1
-	mod = mod + ConstantModel()
+	mod = mod + LinearModel()
 	pars = mod.make_params()
 
 	# Some initial estimates.
@@ -95,10 +96,18 @@ def FitGaussians(x, y, y_err, num):
 	for i in range(num):
 		prefix = "g%d_" % (i+1)
 		guess_center = np.mean(x[x_digitized == (i+1)])
-		pars[prefix+"center"].set(guess_center, min=x.min(), max=x.max())
-		pars[prefix+"amplitude"].set(np.sum(y)/num)
-		pars[prefix+"sigma"].set(5)
-		pars["c"].set(np.mean(y))
+		if i == 0:
+			pars[prefix+"center"].set(guess_center, min=x.min(), max=x.max())
+			pars[prefix+"amplitude"].set(np.sum(y)/num)
+			pars[prefix+"sigma"].set(5)
+		else:
+ 			mu_del = rest_wavelengths[i]- rest_wavelengths[0] # difference
+			pars[prefix+"center"].set(guess_center, min=x.min(), max=x.max(), expr='g1_center + %f' % mu_del )
+			pars[prefix+"amplitude"].set(np.sum(y)/num)
+			pars[prefix+"sigma"].set(5, expr='g1_sigma')
+
+	pars["intercept"].set(np.mean(y))
+	pars['slope'].set(0.1)
 
 	# Great, model has been defined, parameters defined. 
 	results = mod.fit(y, pars, x=x, weights=1/y_err)

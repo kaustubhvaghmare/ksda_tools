@@ -118,7 +118,7 @@ while True:
 		else:
 			yvar_err = None
 		try:
-			c, cerr = FitGaussians(xvar, yvar, yvar_err, no_components)
+			c, cerr = FitGaussians(xvar, yvar, yvar_err, no_components, rest_wavelengths)
 			centroids.append(c)
 			centroid_errs.append(cerr)
 			spatial_points.append( aperture + float(stepsize)/2.0 )
@@ -133,7 +133,7 @@ while True:
 		else:
 			yvar_err = None
 		try:
-			c, cerr = FitGaussians(xvar, yvar, yvar_err, no_components)
+			c, cerr = FitGaussians(xvar, yvar, yvar_err, no_components, rest_wavelengths)
 			centroids.append(c)
 			centroid_errs.append(cerr)
 			spatial_points.append( aperture + float(stepsize)/2.0 )
@@ -144,13 +144,13 @@ while True:
 	centroid_errs = np.array(centroid_errs)
 	spatial_points = np.array(spatial_points)
 
-	filtered = FilterErrorBars(centroid_errs)
-	filtered_fl = filtered.flatten()
-	centroids = centroids[filtered]
-	centroids = np.reshape(centroids, (len(centroids),1))
-	centroid_errs = centroid_errs[filtered]
-	centroid_errs = np.reshape(centroid_errs, (len(centroid_errs),1))
-	spatial_points = spatial_points[filtered_fl]
+	filtered = FilterErrorBars(centroid_errs) # 2d filter
+	#filtered_fl = filtered.prod(axis=1) # combined filter.
+	#centroids = centroids[filtered]
+	#centroids = np.reshape(centroids, (len(centroids),1))
+	#centroid_errs = centroid_errs[filtered]
+	#centroid_errs = np.reshape(centroid_errs, (len(centroid_errs),1))
+	#spatial_points = spatial_points[filtered_fl]
 
 	# Convert spatial row numbers to arc second distance from centre.
 	spatial_points_arc = (spatial_points - centroid)*pixel_scale
@@ -182,8 +182,9 @@ while True:
 	fig2 = plt.figure(2)
 	plt.xlabel("Distance from Center [arcsec]", fontsize=18)
 	plt.ylabel("Heliocentric Radial Velocity [km/s]", fontsize=18)
+	plt.title("For convenience, points with large errors not plotted.")
 	for i in range(no_components):
-		plt.errorbar( spatial_points_arc, centroids_vel_helio[:,i], centroids_vel_helio_err[:,i], fmt="o" )
+		plt.errorbar( spatial_points_arc[filtered[:,i]], centroids_vel_helio[:,i][filtered[:,i]], centroids_vel_helio_err[:,i][filtered[:,i]], fmt="o" )
 		plt.show()
 		raw_input()
 		plt.clf()
@@ -191,6 +192,7 @@ while True:
 	continue_flag = input_str("Satisfied with at least one rotation curve? (y/n): ")
 	if continue_flag == "y":
 		# Ask user for file name to store rotation data.
+		print("Remember: The outlier points will be saved for completeness, the fitting routine will filter them eventually.")
 		filename = raw_input("Enter Base File Name to Save Data: ").rstrip()
 		# Output all rotation curve data.
 		for i in range(no_components):
@@ -201,11 +203,11 @@ while True:
 			out.add_column( Column(centroid_errs[:,i], name="lambda_err") )
 			out.add_column( Column(centroids_vel[:,i], name="V") )
 			out.add_column( Column(centroids_vel_helio[:,i], name="Vhel") )
-			out.add_column( Column(centroids_vel_helio_err[:,i], name="Vhel_rr") )
+			out.add_column( Column(centroids_vel_helio_err[:,i], name="Vhel_err") )
 			out.add_column( Column(centroids_redshifts[:,i], name="z") )
 			out.add_column( Column(centroids_redshifts_err[:,i], name="z_err") )
 		
-			out.write(filename+"_%d.dat" % (i+1), format="ascii", delimiter="\t")
+			out.write(spectrum_file + filename+"_%d.dat" % (i+1), format="ascii", delimiter="\t")
 		
 		rest_file = open(filename+"_rest.out","w")
 		pickle.dump(rest_wavelengths, rest_file)

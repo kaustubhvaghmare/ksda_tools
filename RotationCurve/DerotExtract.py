@@ -126,8 +126,8 @@ def SumUpSpectra( spec_list, output_name, spec_err_list=False, output_err_filena
 
 ############################
 ############################
-rotcurve = sys.argv[2]+"_spline.out"
-rotcurve2 = sys.argv[2]+"_spline_z.out"
+rotcurve = sys.argv[2]+"_fit.out"
+rotcurve2 = sys.argv[2]+"_fit_z.out"
 
 if not os.path.isfile(rotcurve) or not os.path.isfile(rotcurve2):
 	print("Fitting has not been carried for this curve. Please fit the solution first using FitRotationCurve.py")
