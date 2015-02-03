@@ -42,7 +42,7 @@ except:
 if argument == "":
 	id = input_val("Isolate the Specphoto-standard: ", 0, len(science_list)+1)
 
-	if id not in range(len(science_list)):
+	if id not in range(1,len(science_list)+1):
 		print "Invalid Input. Program failed."
 		sys.exit(2)
 

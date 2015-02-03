@@ -33,7 +33,7 @@ for i, name in enumerate(science_list):
 	print "%d) %s\n" % (i+1,name)
 id = input_val("Enter the number indictating the standard star: ", 1,len(science_list)+1)
 
-if id not in range(len(science_list)):
+if id not in range(1,len(science_list)+1):
 	print "Invalid Input. Program failed."
 	sys.exit(2)
 
