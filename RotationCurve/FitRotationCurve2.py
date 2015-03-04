@@ -69,7 +69,7 @@ for i in range(10):
 		outfilez = open( filename+"_fit_z.out", "w")
 		pickle.dump(spline, outfile)
 		pickle.dump(spline_z, outfilez)
-		print "Best-fit spline saved as %s." % (filename+"_spline.out")
+		print "Best-fit spline saved as %s." % (filename+"_fit.out")
 		print "Note that this file can only be retrieved by the derotation program."
 		print "Using outside of Derotation program is discouraged."
 	plt.clf()

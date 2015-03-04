@@ -1,0 +1,81 @@
+#! /usr/bin/python
+# Program designed to test whether all spectra are at the same level.
+# This needs to be done especially because SALT has a variable pupil.
+# As a result of this, even though the integration times are equal, 
+# the effective exposure time changes owing to the varying aperture. 
+# So, one needs to account for this.
+
+# Import libraries.
+import numpy as np
+from pyraf import iraf
+from pyraf.iraf import noao
+from pyraf.iraf import stsdas
+
+import pyfits as fits
+import os,sys,glob,string,time
+import math as mth
+import pickle
+import matplotlib.pyplot as plt
+
+# Load support functions.
+
+input_files = sys.argv[1:]
+
+print("""Choose one method of equalization: 
+1. Median
+2. Mode
+3. Mean
+Choice: """)
+choice = int(raw_input()) - 1
+
+if choice < 0 or choice > 2:
+	print("Wrong Choice. Try again!")
+	sys.exit(2)
+
+choice_map = [np.median, np.max, np.mean]
+
+# Define a centroiding algorithm, use it get a central row.
+def GetCentroid( spatial_points, intensities):
+	return np.sum(spatial_points * intensities)/np.sum(intensities)
+
+# Now, get modes for all input science images at their centres.
+evals = np.ones(len(input_files), dtype=float)
+fig1 = plt.figure(1,figsize=(12,6))
+for i,f in enumerate(input_files):
+	hdulist = fits.open(f)
+	header = hdulist[0].header
+	data = hdulist[0].data
+	if i==0:
+		centroid =  GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
+		central_row = int(round(centroid, 0))
+	evals[i] = choice_map[choice](data[central_row, :])
+	plt.plot(data[central_row, :], label=f)
+
+plt.title("Before applying equalization.")
+plt.legend()
+fig1.show()
+raw_input("Press any key to apply equalization.")
+
+max_max = np.argmax(evals)
+scaling_factors = evals / evals[max_max]
+
+fig2 = plt.figure(2,figsize=(12,6))
+for i,f in enumerate(input_files):
+	hdulist = fits.open(f)
+	header = hdulist[0].header
+	data = hdulist[0].data
+	if i==0:
+		centroid =  GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
+		central_row = int(round(centroid, 0))
+	plt.plot(data[central_row, :]/scaling_factors[i], label=f)
+
+plt.legend()
+fig2.show()
+choice = raw_input("Are you happy with the equalization obtained (y/n)?").lower()
+
+if choice=="y":
+	for i, f in enumerate(input_files):
+		iraf.images.imutil.imarith(operand1=f, op="/",
+									operand2=scaling_factors[i], 
+									result="n"+f)
+

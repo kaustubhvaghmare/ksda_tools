@@ -15,7 +15,7 @@ import ApertureLibrary as al
 from pyraf import iraf
 import pysynphot as ps
 from RotationCurveLib import *
-
+from DerotExtract import *
 
 # Start by validating inputs.
 if len(sys.argv) != 4:
@@ -36,87 +36,11 @@ if not os.path.isfile(filename):
 	sys.exit(3)
 errfilename_root = filename.replace(".fits", "")
 
-def SarithLimits(filelist):
-	"""
-	Input: List of Names of 1-d spectra.
-	Output: w1, w2 the lower and upper wavelengths needed for calculation of sum.
-
-	Program assumes equal length, does not check for the same.
-	"""
-	lefts = np.ones(len(filelist), float)
-	rights = np.ones(len(filelist),float)
-	for i,f in enumerate(filelist):
-		hdulist = fits.open(f)
-		wcs = pw.WCS(hdulist[0].header)
-		lefts[i] = wcs.all_pix2world( [0], 1)[0][0] 
-		rights[i] = wcs.all_pix2world( [len(hdulist[0].data)], 1)[0][0]
-
-	edge1 = np.max(lefts)
-	edge2 = np.min(rights)
-	return edge1, edge2
-
-def read_1dspectrum(filename):
-	"""
-	Input: Filename
-	Output: header, data and wavelengths.
-	"""
-	hdulist = fits.open(filename)
-	wcs = pw.WCS(hdulist[0].header)
-	data = hdulist[0].data
-	wavelengths = wcs.all_pix2world( np.arange(len(data))+0.5, 1)[0]
-
-	return hdulist[0].header, data, wavelengths
-
-
-
 ############################
 ############################
-def SumUpSpectra( spec_list, output_name, spec_err_list=False, output_err_filename=False, clean=True):
-	"""
-	Uses IRAF's sarith task to sum a list of spectra and generate an output spectrum
-	Input: Python list of strings, each string being a file name.
-		   Name of the output file to be generated.
-		   clean=True, will delete old files are sum is generated.
-	"""
-	# We want to take care of the case where only one row is provided to us.
-	if len(spec_list) == 1:
-		os.rename(spec_list[0], output_name)
-		if spec_err_list:
-			os.rename(spec_err_list[0], output_err_filename)
-		return
 
-	# We want to estimate the wavelengths limits required.
-	w1, w2 = SarithLimits(spec_list)
-	w1 = np.ceil(w1)
-	w2 = np.floor(w2)
-	wavelengths = np.arange(w1,w2+1,1)
-
-	# Let us start with a loop for spectra.
-	spectra_resampled = np.ones( (len(spec_list),len(wavelengths)), float)
-	for i,spec in enumerate(spec_list):
-		h, d, w = read_1dspectrum(spec)
-		s = ps.ArraySpectrum(wave=w, flux=d)
-		s = s.resample(wavelengths)
-		spectra_resampled[i] = s.flux
-	spectrum_mean = spectra_resampled.mean(axis=0)
-	
-	error_spectra = np.ones( (len(spec_list),len(wavelengths)), float)
-	for i,spec_err in enumerate(spec_err_list):
-		h, d, w = read_1dspectrum(spec_err)
-		s = ps.ArraySpectrum(wave=w, flux=d)
-		s = s.resample(wavelengths)
-		error_spectra[i] = s.flux**2
-	spectrum_mean_error = np.sqrt( error_spectra.mean(axis=0) )
-
-	f = open(output_name, "w")
-	for i in range(len(wavelengths)):
-		f.write("  %.0f  %f  %f\n" % (wavelengths[i], spectrum_mean[i], spectrum_mean_error[i]))
-	f.close()
-
-############################
-############################
-rotcurve = sys.argv[2]+"_spline.out"
-rotcurve2 = sys.argv[2]+"_spline_z.out"
+rotcurve = sys.argv[2]+"_fit.out"
+rotcurve2 = sys.argv[2]+"_fit_z.out"
 
 if not os.path.isfile(rotcurve) or not os.path.isfile(rotcurve2):
 	print("Fitting has not been carried for this curve. Please fit the solution first using FitRotationCurve.py")

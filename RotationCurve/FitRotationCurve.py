@@ -62,11 +62,11 @@ fig1.show()
 # Formally confirm that the user is satisfied with the spectrum
 choice = raw_input("Are you okay with the fit? 'y' to approve, any other key to disapprove.").rstrip()
 if choice == "y":
-	outfile = open( filename+"_spline.out", "w")
-	outfilez = open( filename+"_spline_z.out", "w")
+	outfile = open( filename+"_fit.out", "w")
+	outfilez = open( filename+"_fit_z.out", "w")
 	pickle.dump(spline, outfile)
 	pickle.dump(spline_z, outfilez)
-	print "Best-fit spline saved as %s." % (filename+"_spline.out")
+	print "Best-fit spline saved as %s." % (filename+"_fit.out")
 	print "Note that this file can only be retrieved by the derotation program."
 	print "Using outside of Derotation program is discouraged."
 else:
