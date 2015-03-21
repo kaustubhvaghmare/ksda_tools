@@ -71,14 +71,15 @@ def Wavelength2Pixels(header, *args):
 	pixels = [ pixels[i][0] for i in range(len(pixels)) ]
 	return pixels
 
-def FitGaussians(x, y, y_err, num, rest_wavelengths=False):
+def FitGaussians(x, y, y_err, num, rest_wavelengths=False, mode="centroid"):
 	"""
 	Input: x, generally wavelengths.
 	       y, generally flux
 		   y_err, errors on y
 		   num: number of Gaussians to fit
 		   rest_wavelengths: used for computing constraints on Gaussian fits
-	Output: Mean Centroid, Error on Mean Centroid
+	Output: Mean Centroid, Error on Mean Centroid if used in default,
+			if mode = "width", will return computed sigma and sigma_err.
 	"""
 	# First, define a model.
 	mod = GaussianModel(prefix="g1_")
@@ -99,7 +100,7 @@ def FitGaussians(x, y, y_err, num, rest_wavelengths=False):
 		if i == 0:
 			pars[prefix+"center"].set(guess_center, min=x.min(), max=x.max())
 			pars[prefix+"amplitude"].set(np.sum(y)/num)
-			pars[prefix+"sigma"].set(5)
+			pars[prefix+"sigma"].set(5,min=0)
 		else:
  			mu_del = rest_wavelengths[i]- rest_wavelengths[0] # difference
 			pars[prefix+"center"].set(guess_center, min=x.min(), max=x.max(), expr='g1_center + %f' % mu_del )
@@ -114,13 +115,27 @@ def FitGaussians(x, y, y_err, num, rest_wavelengths=False):
 	params = results.params
 	centers = np.ones(num, dtype=float)
 	centers_err = np.ones(num, dtype=float)
+	widths = np.ones(num, dtype=float)
+	widths_err = np.ones(num, dtype=float)
 	for i in range(num):
-		param_name = "g%d_center" % (i+1)
-		centers[i] = params[param_name].value
-		centers_err[i] = params[param_name].stderr
-	
+		param_name1 = "g%d_center" % (i+1)
+		param_name2 = "g%d_sigma" % (i+1)
+		centers[i] = params[param_name1].value
+		centers_err[i] = params[param_name1].stderr
+		widths[i] = params[param_name2].value
+		widths_err[i] = params[param_name2].stderr
+
 	ind_sort = np.argsort(centers)
-	return centers, centers_err
+
+	if mode=="centroid":
+		return centers, centers_err
+	elif mode=="width":
+		return widths, widths_err
+	elif mode=="both":
+		return centers, centers_err, widths, widths_err
+	else:
+		print("Warning: Invalid mode argument. Returning centroids.")
+		return centers, centers_err
 
 # A basic y/n questioner.
 def input_str(script):
@@ -199,3 +214,41 @@ def FilterErrorBars(x_err):
 	med = np.median(x_err)
 	desired = ( x_err <= 2*med )
 	return desired
+
+
+# Function for extraction of 1-d spectrum from a 2-d spectrum.
+def Extract1d(spec_file, row_num, col1, col2, out_file, clobber=True):
+	"""
+	Input: The name of the input 2d spectrum, the row of extraction and the output file.
+	Output: None. Just creates the relevant file.
+	"""
+	if col1 > col2:
+		print("Col1 cannot be greater than Col2")
+		return 
+	hdulist = fits.open(spec_file)
+	data = hdulist[0].data[row_num,col1:col2+1 ]
+	header = hdulist[0].header
+	for key in ["CTYPE2", "CDELT2", "CD2_2", "LTM2_2", "WAT2_001", "DISPAXIS"]:
+		header.remove(key)
+	header["WCSDIM"] = 1
+	header["WAT0_001"] = "system=equispec"
+	header["CRPIX1"] = col1 - 1 - header["CRPIX1"]
+	header["LTV1"] = 1 - col1
+
+	fits.writeto(out_file, data, header, clobber=clobber)
+
+def DopplerCorrect(spec_file, redshift, out_file, clobber=True):
+	"""
+	Input: The input 1d spec_file to be Doppler Corrected.
+		   The redshift to be applied.
+		   The output file name.
+	Output: None. Just creates a new file with Doppler correction applied.
+	"""
+	hdulist = fits.open(spec_file)
+	data = hdulist[0].data
+	header = hdulist[0].header
+	header["CRVAL1"] = header["CRVAL1"] / (1.0+redshift)
+	header["CDELT1"] = header["CDELT1"] / (1.0+redshift)
+	header["CD1_1"] = header["CD1_1"] / (1.0+redshift)
+
+	fits.writeto(out_file, data, header, clobber=clobber)

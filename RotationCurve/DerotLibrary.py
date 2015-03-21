@@ -4,6 +4,9 @@ Some support functions for tools such as DerotExtract.py and others.
 
 import pyfits as pf
 import numpy as np
+from astropy.io import fits
+import astropy.wcs as pw
+import pysynphot as ps
 
 def SarithLimits(filelist):
 	"""
