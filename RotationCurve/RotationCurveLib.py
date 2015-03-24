@@ -252,3 +252,28 @@ def DopplerCorrect(spec_file, redshift, out_file, clobber=True):
 	header["CD1_1"] = header["CD1_1"] / (1.0+redshift)
 
 	fits.writeto(out_file, data, header, clobber=clobber)
+
+def MeanSigmaClipper(x, sigma=3, compliment=False,niter=10):
+	"""
+	Input: x, the array on which simple sigma clipping needs to be done.
+		   sigma, the level of clipping
+		   compliment, by default those that remain post rejection, their
+		   indices are returned, but this was cause indices of rejected
+		   to be returned.
+	Output: Indices of those elements in x that withstand rejection or
+		   otherwise if the compliment option is selected.
+	"""
+	accepted = np.ones( len(x), dtype=bool)
+
+	for i in range(niter):
+		xt = x[accepted]
+		mean = np.mean(xt)
+		std = np.std(xt)
+		filt = (x <= (mean + sigma*std) ) & (x >= (mean - sigma*std) )
+		accepted = np.bitwise_and( accepted, filt )
+	
+	if not compliment:
+		return accepted
+	else:
+		return np.bitwise_not(accepted)
+	

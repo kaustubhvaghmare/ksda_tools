@@ -15,7 +15,8 @@ import ApertureLibrary as al
 from pyraf import iraf
 import pysynphot as ps
 from RotationCurveLib import *
-from DerotExtract import *
+from DerotLibrary import *
+from numpy.polynomial.polynomial import polyval
 
 # Start by validating inputs.
 if len(sys.argv) != 4:
@@ -47,7 +48,7 @@ if not os.path.isfile(rotcurve) or not os.path.isfile(rotcurve2):
 	sys.exit(4)
 
 # Load the solution.
-splinez = pickle.load(open(rotcurve2))
+interp_coeff_z = pickle.load(open(rotcurve2))
 
 # Take the user through the following steps
 # Display spatial profile.
@@ -94,7 +95,7 @@ for w in range(no_windows):
 #			pf.writeto(tempfile, data = spec_data, header=header)
 #			pf.writeto(temp_erfile, data = spec_err, header=er_header)
 			# Use Spline to get wavelength associated with 
-			redshift_at_aperture = splinez(row)
+			redshift_at_aperture = polyval(row, interp_coeff_z)
 			# Deredshift the spectrum.
 			iraf.noao.twodspec.longslit.dopcor(input=tempfile, output=tempfile, redshift = float(redshift_at_aperture))
 			iraf.noao.twodspec.longslit.dopcor(input=temp_erfile, output=temp_erfile, redshift = float(redshift_at_aperture))

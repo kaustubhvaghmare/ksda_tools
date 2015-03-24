@@ -9,6 +9,8 @@ import sys
 import scipy.interpolate as si
 import pickle
 from numpy.polynomial.polynomial import polyfit, polyval
+from RotationCurveLib import *
+
 
 # Check if file name was supplied.
 try:
@@ -22,6 +24,12 @@ try:
 except:
 	print "No such curve exists or curve corrupt."
 	sys.exit(3)
+
+# Filter the Rotation Curve of outlier points.
+filtered = FilterErrorBars(rotcurve["Vhel_err"])
+filtered2 = MeanSigmaClipper(rotcurve["Vhel"], sigma=2.5)
+rotcurve = rotcurve[ (filtered & filtered2) ]
+
 
 # Display the rotation curve for user to preview.
 fig1 = plt.figure(1)
@@ -46,7 +54,7 @@ sortind = np.argsort( rotcurve["Row"] )
 
 fig1 = plt.figure(1)
 xs = np.linspace( np.min(rotcurve["Row"]), np.max(rotcurve["Row"]), 1000)
-for i in range(10):
+for i in range(15):
 	interp_coeff = polyfit( rotcurve["Row"], rotcurve["lambda"], w=1/rotcurve["lambda_err"], deg=i)
 	interp_coeff_z = polyfit( rotcurve["Row"], rotcurve["z"], w=1/rotcurve["z_err"], deg=i)
 
@@ -67,9 +75,11 @@ for i in range(10):
 	if choice == "y":
 		outfile = open( filename+"_fit.out", "w")
 		outfilez = open( filename+"_fit_z.out", "w")
-		pickle.dump(spline, outfile)
-		pickle.dump(spline_z, outfilez)
+		
+		pickle.dump(interp_coeff, outfile)
+		pickle.dump(interp_coeff_z, outfilez)
 		print "Best-fit spline saved as %s." % (filename+"_fit.out")
 		print "Note that this file can only be retrieved by the derotation program."
 		print "Using outside of Derotation program is discouraged."
+		break
 	plt.clf()

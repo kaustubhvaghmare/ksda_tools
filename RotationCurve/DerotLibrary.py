@@ -7,6 +7,7 @@ import numpy as np
 from astropy.io import fits
 import astropy.wcs as pw
 import pysynphot as ps
+import os
 
 def SarithLimits(filelist):
 	"""
