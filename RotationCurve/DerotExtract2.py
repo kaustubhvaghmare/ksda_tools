@@ -80,7 +80,7 @@ for w in range(no_windows):
 	for a in range(no_apertures-1):
 		x1, x2 = int(aperture_coordinates[w, a]), int(aperture_coordinates[w, a+1])
 		print "\tWorking on Aperture %d defined from %d to %d." %(a+1,x1,x2)
-		for counter, row in enumerate(range(x1, x2)):
+		for counter, row in enumerate(range(x1, x2+1)):
 			# Get data slice.
 			spec_data = data[row,:]
 			spec_err = er_data[row,:]
@@ -100,8 +100,8 @@ for w in range(no_windows):
 			iraf.noao.twodspec.longslit.dopcor(input=tempfile, output=tempfile, redshift = float(redshift_at_aperture))
 			iraf.noao.twodspec.longslit.dopcor(input=temp_erfile, output=temp_erfile, redshift = float(redshift_at_aperture))
 		# We now have several files present which have all been deredshifted.
-		temp_aperture_files = [ "temp%d.fits" % i for i in range(len(range(x1,x2))) ]
-		temp_aperture_errfiles = [ "temp%d_err.fits" % i for i in range(len(range(x1,x2))) ]
+		temp_aperture_files = [ "temp%d.fits" % i for i in range(len(range(x1,x2+1))) ]
+		temp_aperture_errfiles = [ "temp%d_err.fits" % i for i in range(len(range(x1,x2+1))) ]
 		aperture_filename = "%sWindow%d_Aperture%d.dat" % (filename_root, w, a) 
 		aperture_err_filename = "%sWindow%d_Aperture%d_err.dat" % (filename_root, w, a) 
 		SumUpSpectra( temp_aperture_files, aperture_filename, temp_aperture_errfiles, aperture_err_filename)

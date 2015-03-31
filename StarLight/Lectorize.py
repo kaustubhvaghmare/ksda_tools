@@ -41,7 +41,7 @@ def RunLector(specfile):
 	lec_spec.write("temp.spec", format="ascii")
 
 	# Run Lector.
-	os.system("lector < lector.in")
+	os.system("/home/kaustubh/Tools/Lector/lector < lector.in")
 	os.rename("temp.spec_LINE", spec+"_LINE")
 	os.rename("temp.spec_ROSE", spec+"_ROSE")
 
@@ -49,6 +49,7 @@ def RunLector(specfile):
 # Loop over all 1-d spectra.
 for spec in aper_map["col1"]:
 	# Load spectrum.
+	print("Working on %s" % spec)
 	RunLector(spec)
 	
 # Done.

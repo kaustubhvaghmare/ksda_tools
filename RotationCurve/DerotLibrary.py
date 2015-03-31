@@ -117,9 +117,22 @@ def SumUpSpectra( spec_list, output_name, spec_err_list=False, output_err_filena
 	"""
 	# We want to take care of the case where only one row is provided to us.
 	if len(spec_list) == 1:
-		os.rename(spec_list[0], output_name)
-		if spec_err_list:
-			os.rename(spec_err_list[0], output_err_filename)
+		h, d, w = read_1dspectrum(spec_list[0])
+		he, de, we = read_1dspectrum(spec_err_list[0])
+
+		w1 = np.ceil(np.min(w))
+		w2 = np.floor(np.max(w))
+		wavelengths = np.arange(w1,w2+1,1)
+		s = ps.ArraySpectrum(wave=w, flux=d)
+		s = s.resample(wavelengths)
+		se = ps.ArraySpectrum(wave=we, flux=de)
+		se = se.resample(wavelengths)
+
+		f = open(output_name, "w")
+		for i in range(len(wavelengths)):
+			f.write("  %.0f  %f  %f\n" % (wavelengths[i], s.flux[i], se.flux[i]))
+		f.close()
+
 		return
 
 	# We want to estimate the wavelengths limits required.
