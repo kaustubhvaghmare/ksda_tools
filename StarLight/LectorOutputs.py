@@ -42,15 +42,20 @@ class LectorOutput:
 		self.lick_index_names = self.bands["col8"]
 
 		self.indices = {}
+		self.indices_err = {}
 		self.indices["dfc"] = self.dfcs
+		self.indices_err["dfc"] = self.dfcs
 		for i in self.lick_index_names:
 			self.indices[i] = []
+			self.indices_err[i] = []
 
 		for spec in self.ap_table["col1"]:
 			for i, lick in enumerate(self.lick_index_names):
 				self.indices[lick].append(float(open(spec+"_LINE").read().split()[i+1]))
+				self.indices_err[lick].append(float(open(spec+"_LINE_ERR").read().split()[i+1]))
 
 		for i in self.lick_index_names[1:]:
 			self.indices[i] = np.array(self.indices[i], dtype=float)
+			self.indices_err[i] = np.array(self.indices_err[i], dtype=float)
 
 

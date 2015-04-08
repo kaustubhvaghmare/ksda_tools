@@ -43,7 +43,7 @@ def RunLector(specfile):
 	lec_spec.write("temp.spec", format="ascii")
 
 	# Run Lector.
-	os.system("/home/kaustubh/Tools/Lector/lector < lector.in")
+	os.system("/home/kaustubh/Tools/Lector/lector < lector.in > /dev/null")
 	os.rename("temp.spec_LINE", spec+"_LINE")
 	os.rename("temp.spec_ROSE", spec+"_ROSE")
 
@@ -65,6 +65,7 @@ def LectorError(specfile, sim=100):
 	spectrum = Table.read(specfile, format="ascii")
 #	lec_spec = spectrum["col1", "col2"]
 	
+	print("Simulating Synthetic Spectra to Obtain Errors")
 	for i in range(sim):
 
 		# Make realization.
@@ -74,7 +75,7 @@ def LectorError(specfile, sim=100):
 		realization.write("temp.spec", format="ascii")
 
 		# Run lector.
-		os.system("/home/kaustubh/Tools/Lector/lector < lector.in")
+		os.system("/home/kaustubh/Tools/Lector/lector < lector.in > /dev/null")
 
 		sim_data[i] = np.array(open("temp.spec_LINE").read().split()[1:-3], dtype=float)
 	
@@ -83,6 +84,7 @@ def LectorError(specfile, sim=100):
 	err_out.write("temp.spec    ")
 	err_out.write("  ".join([str(i) for i in errors]))
 	err_out.close()
+	os.system("rm temp.spec*")
 
 
 # Loop over all 1-d spectra.

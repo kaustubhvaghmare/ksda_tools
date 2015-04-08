@@ -108,3 +108,5 @@ for w in range(no_windows):
 		print "Summing up all parts of aperture...done."
 		position = (x1+x2)/2.0 - centroid
 		aperture_map.write("%s\t%s\t%.2f\n" % (aperture_filename, aperture_err_filename, position))
+
+os.system("rm temp*.fits")

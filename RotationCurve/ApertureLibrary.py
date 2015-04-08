@@ -36,7 +36,7 @@ plt.ion()
 
 
 #------------------------------------------------------------------------------------------------------------------------------------
-#function to get the coordinates of the windows
+#function to get the coordinates of the windows through GUI
 def wincoord(winno):
 	cor1 = 1 ; cor2 = 0
 	while cor1 > cor2:
@@ -52,6 +52,16 @@ def wincoord(winno):
 			cor1, cor2 = cor2, cor1
 	return round(cor1,0),round(cor2,0)
 
+# Like wincoord but gets coordinates by accepting width.
+def cuicoord(winno, centroid):
+	while True:
+		width = int(raw_input("Enter width: "))
+		centroid = int(centroid)
+		cor1 = centroid - width
+		cor2 = centroid + width
+		if cor1 > 0:
+			return cor1, cor2
+	
 #------------------------------------------------------------------------------------------------------------------------------------
 #function to get the input value of a user (and deal in the cases of typing mistakes)
 def input_val(script,lim1,lim2):
@@ -158,6 +168,8 @@ def weigh_func(ans,xnew):
 #------------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------------------
 
+def GetCentroid( spatial_points, intensities):
+	return np.sum(spatial_points * intensities)/np.sum(intensities)
 
 #change directory to where image file is
 os.chdir(pathrun)
@@ -175,18 +187,23 @@ def get_aperture(filename, file_err=None):
 	temp = np.arange(len(xsection))
 	np.savetxt("selfdeffunc.txt", np.vstack( (temp, xsection) ) )
 	
+	centroid = GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
 	
 	#plotting the x-section for window selection
 	plt.plot(xsection)
 	plt.xlabel('spatial pixel direction')
 	plt.ylabel('Flux')
-	plt.title('Plot of the cross section of the fits file for window selection')
+	plt.title('Cross Section Plot; Central Row = %d' % int(centroid))
 	windowno = input_val('Enter the number of windows(targets) you want to have aperture extraction',0,10)
 	
+	cui_mode = input_str('Enter window boundaries through keyboard? (y/n): ')
 	coord = np.zeros((windowno,2),int)
 	#window selection 
 	for i in range(0,windowno):
-		coord[i,:] = wincoord(i+1)
+		if cui_mode == "n":
+			coord[i,:] = wincoord(i+1)
+		else:
+			coord[i,:] = cuicoord(i+1, centroid)
 	
 	plt.close()
 	

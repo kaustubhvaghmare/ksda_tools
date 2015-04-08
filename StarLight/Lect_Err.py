@@ -39,7 +39,7 @@ def LectorError(specfile, sim=100):
 		realization.write("temp.spec", format="ascii")
 
 		# Run lector.
-		os.system("/home/kaustubh/Tools/Lector/lector < lector.in")
+		os.system("/home/kaustubh/Tools/Lector/lector < lector.in > /dev/null")
 
 		sim_data[i] = np.array(open("temp.spec_LINE").read().split()[1:-3], dtype=float)
 	

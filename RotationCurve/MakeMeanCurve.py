@@ -31,14 +31,17 @@ for curve in curve_files_all:
 # Display the curves one by one.
 fig1 = plt.figure(1, figsize=(6,6))
 for i,t in enumerate(curve_tables_all):
-	filtered = FilterErrorBars(t["z_err"])
-	plt.errorbar( t["DFCG"][filtered], t["z"][filtered], t["z_err"][filtered], fmt="o" )
+	filtered1 = FilterErrorBars(t["Vhel_err"])
+	filtered2 = MeanSigmaClipper(t["Vhel"], sigma=2.50)
+	filtered = (filtered1 & filtered2)
+	plt.errorbar( t["DFCG"][filtered], t["z"][filtered], t["z_err"][filtered], fmt="o", label=curve_files_all[i] )
 	plt.xlabel("Row Number", fontsize=18)
 	plt.ylabel("Wavelength Center", fontsize=18)
 	plt.title("For file %s" % curve_files_all[i])
-	plt.show()
-	raw_input("Press any key for next curve.")
-	plt.clf()
+plt.legend()
+plt.show()
+#	raw_input("Press any key for next curve.")
+#	plt.clf()
 
 print("Curves have not been displayed. You are now required to reject the curves which you believe" 
 		"have not been determined sufficiently well. Only the remaining curves, if any, will be used for"
@@ -59,9 +62,22 @@ curve_files = []
 curve_tables = []
 
 # Remove rejected
-for i in rejected:
-	curve_files.append( curve_files_all[i] )
-	curve_tables.append( curve_tables_all[i] )
+for i in range(len(curve_files_all)):
+	if i not in rejected:
+		curve_files.append( curve_files_all[i] )
+		curve_tables.append( curve_tables_all[i] )
+
+fig1 = plt.figure(1, figsize=(6,6))
+for i,t in enumerate(curve_tables):
+	filtered1 = FilterErrorBars(t["Vhel_err"])
+	filtered2 = MeanSigmaClipper(t["Vhel"], sigma=2.5)
+	filtered = (filtered1 & filtered2)
+	plt.errorbar( t["DFCG"][filtered], t["z"][filtered], t["z_err"][filtered], fmt="o", label=curve_files[i] )
+	plt.xlabel("Row Number", fontsize=18)
+	plt.ylabel("Wavelength Center", fontsize=18)
+	plt.title("For file %s" % curve_files[i])
+plt.legend()
+plt.show()
 
 # Next, make the mean curve.
 columns = ["lambda", "V", "Vhel", "z"]
