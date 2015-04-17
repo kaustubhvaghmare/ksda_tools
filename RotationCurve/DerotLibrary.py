@@ -123,9 +123,9 @@ def SumUpSpectra( spec_list, output_name, spec_err_list=False, output_err_filena
 		w1 = np.ceil(np.min(w))
 		w2 = np.floor(np.max(w))
 		wavelengths = np.arange(w1,w2+1,1)
-		s = ps.ArraySpectrum(wave=w, flux=d)
+		s = ps.ArraySpectrum(wave=w, flux=d, keepneg=True)
 		s = s.resample(wavelengths)
-		se = ps.ArraySpectrum(wave=we, flux=de)
+		se = ps.ArraySpectrum(wave=we, flux=de, keepneg=True)
 		se = se.resample(wavelengths)
 
 		f = open(output_name, "w")
@@ -145,7 +145,7 @@ def SumUpSpectra( spec_list, output_name, spec_err_list=False, output_err_filena
 	spectra_resampled = np.ones( (len(spec_list),len(wavelengths)), float)
 	for i,spec in enumerate(spec_list):
 		h, d, w = read_1dspectrum(spec)
-		s = ps.ArraySpectrum(wave=w, flux=d)
+		s = ps.ArraySpectrum(wave=w, flux=d,keepneg=True)
 		s = s.resample(wavelengths)
 		spectra_resampled[i] = s.flux
 	spectrum_mean = spectra_resampled.mean(axis=0)

@@ -16,6 +16,16 @@ class MissingApertureMap(Exception):
 class MissingBandFile(Exception):
 	pass
 
+def GetIndices(filename):
+	lines = open(filename).readlines()
+	for c,l in enumerate(lines):
+		if l.startswith("Hg_sigma_130"):
+			break
+	
+	data_lines = lines[c:]
+	t = Table.read(data_lines,format="ascii")
+	return np.array(t["col2"])
+
 
 class LectorOutput:
 	"""
@@ -51,7 +61,8 @@ class LectorOutput:
 
 		for spec in self.ap_table["col1"]:
 			for i, lick in enumerate(self.lick_index_names):
-				self.indices[lick].append(float(open(spec+"_LINE").read().split()[i+1]))
+				#self.indices[lick].append( float(open(spec+"_LINE").read().split()[i+1]))
+				self.indices[lick].append( GetIndices(spec+"_INDICES")[i] )
 				self.indices_err[lick].append(float(open(spec+"_LINE_ERR").read().split()[i+1]))
 
 		for i in self.lick_index_names[1:]:

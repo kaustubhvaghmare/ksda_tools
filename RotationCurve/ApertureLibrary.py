@@ -57,8 +57,8 @@ def cuicoord(winno, centroid):
 	while True:
 		width = int(raw_input("Enter width: "))
 		centroid = int(centroid)
-		cor1 = centroid - width
-		cor2 = centroid + width
+		cor1 = centroid - width/2
+		cor2 = centroid + width/2
 		if cor1 > 0:
 			return cor1, cor2
 	

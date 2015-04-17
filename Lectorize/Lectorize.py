@@ -26,6 +26,19 @@ except:
 	print("You have not run DerotExtract utility on this file. Please do so before using this tool.")
 	sys.exit(3)
 
+def GetIndices(filename):
+	"""Input: Filename
+	Output: Indices from the filename.
+	"""
+	lines = open(filename).readlines()
+	for c,l in enumerate(lines):
+		if l.startswith("Hg_sigma_130"):
+			break
+	
+	data_lines = lines[c:]
+	t = Table.read(data_lines,format="ascii")
+	return np.array(t["col2"])
+
 
 def RunLector(specfile):
 	"""
@@ -44,6 +57,7 @@ def RunLector(specfile):
 
 	# Run Lector.
 	os.system("/home/kaustubh/Tools/Lector/lector < lector.in > /dev/null")
+	os.rename("temp.spec_INDICES", spec+"_INDICES")
 	os.rename("temp.spec_LINE", spec+"_LINE")
 	os.rename("temp.spec_ROSE", spec+"_ROSE")
 
@@ -77,7 +91,8 @@ def LectorError(specfile, sim=100):
 		# Run lector.
 		os.system("/home/kaustubh/Tools/Lector/lector < lector.in > /dev/null")
 
-		sim_data[i] = np.array(open("temp.spec_LINE").read().split()[1:-3], dtype=float)
+		#sim_data[i] = np.array(open("temp.spec_LINE").read().split()[1:-3], dtype=float)
+		sim_data[i] = GetIndices("temp.spec_INDICES")
 	
 	errors = np.std(sim_data, axis=0)
 	err_out = open(spec+"_LINE_ERR", "w")

@@ -27,7 +27,7 @@ num_fits = len(aperture_table)
 current_dir = os.getcwd()
 
 grid_header = """{0:d}                                                [Number of fits to run]
-/home/kaustubh/Tools/Starlight/STARLIGHTv04/BasesDir/                 [base_dir]
+/home/kaustubh/Tools/Starlight/STARLIGHTv04/MilesBase/                 [base_dir]
 {1:s}/                                                  [obs_dir]
 {1:s}/                                                  [mask_dir]
 {1:s}/                                                 [out_dir]
@@ -46,7 +46,7 @@ FIT                                              [FIT/FXK] Fit or Fix kinematics
 # Some basic parameters needed to make the rest of the file.
 standard_config = "StCv04.C11.config"
 common_mask = "Masks.EmLines.SDSS.gm"
-base_file = "Base.BC03.N"
+base_file = "Base.miles.Mun1.30.3Z"
 redenning_law = "CCM"
 initial_vel = 0
 initial_vdisp = 150
@@ -55,7 +55,7 @@ initial_vdisp = 150
 grid_rest = ""
 for spec in aperture_table["col1"]:
 	grid_rest += "%s   %s   %s   %s   %s   %s   %s   %s\n" % (spec, standard_config,
-	base_file, common_mask, redenning_law, initial_vel, initial_vdisp, spec[:-4]+"out")
+	base_file, common_mask, redenning_law, initial_vel, initial_vdisp, spec[:-4]+".out")
 
 outfile = open(filename[:-5]+"_grid.in","w")
 outfile.write(grid_header + grid_rest)

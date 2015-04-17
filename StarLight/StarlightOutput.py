@@ -26,7 +26,7 @@ class StarOutput(object):
 
 		# Now, head towards parsing the output file.
 		self.no_bases = int(self.star[9].split()[0])
-		self.no_points = int(self.star[215].split()[0])
+		self.no_points = int(self.star[3*self.no_bases+80].split()[0])
 		self.vel0 = float(self.star[57].split()[0])
 		self.veldisp = float(self.star[58].split()[0])
 
@@ -44,7 +44,7 @@ class StarOutput(object):
 
 		# Transfer data containing poulations table into a temporary file.
 		self.temp_table = open("temp.txt","w")
-		self.temp_table.writelines( self.star[216:216+self.no_points])
+		self.temp_table.writelines( self.star[3*self.no_bases+81:3*self.no_bases+81+self.no_points])
 		self.temp_table.close()
 
 		# Create an Astropy table based on the above temporary file.
