@@ -45,7 +45,7 @@ FIT                                              [FIT/FXK] Fit or Fix kinematics
 
 # Some basic parameters needed to make the rest of the file.
 standard_config = "StCv04.C11.config"
-common_mask = "Masks.EmLines.SDSS.gm"
+common_mask = filename[:-4]+"mask" #"Masks.EmLines.SDSS.gm"
 base_file = "Base.miles.Mun1.30.3Z"
 redenning_law = "CCM"
 initial_vel = 0
