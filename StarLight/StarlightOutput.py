@@ -24,61 +24,73 @@ class StarOutput(object):
 					is either absent or corrupt. Please check if file exists.")
 			raise ConstructionException
 
-		# Now, head towards parsing the output file.
+		# Extract all relevant information output by Starlight.
+		# 1. No of base spectra and pts in spectra, and goodness-of-fit
 		self.no_bases = int(self.star[9].split()[0])
 		self.no_points = int(self.star[3*self.no_bases+80].split()[0])
+		self.chi2_reduced =  float(self.star[49].split()[0])
+		self.adev =  float(self.star[50].split()[0])
+
+		# 2. Kinematic information
 		self.vel0 = float(self.star[57].split()[0])
 		self.veldisp = float(self.star[58].split()[0])
 
-		# Transfer data containing poulations table into a temporary file.
-		self.temp_table = open("temp.txt","w")
-		self.temp_table.writelines( self.star[62:62+self.no_bases])
-		self.temp_table.close()
+		# 3. Extinction information
+		self.av = float(self.star[59].split()[0])
 
 		# Create an Astropy table based on the above temporary file.
-		self.poptable = Table.read("temp.txt", format="ascii")
-		# And now delete the file.
-		os.remove("temp.txt")
-
+		self.poptable = Table.read(self.star[62:62+self.no_bases], format="ascii")
+	
+		# Derive some values from the population table.
+		# Fractions in Old, Intermediate and Young Populations
+		young = (self.poptable["age_j(yr)"] < 1e8)
+		inter = (self.poptable["age_j(yr)"] > 1e8) & (self.poptable["age_j(yr)"] < 1e9)
+		older = (self.poptable["age_j(yr)"] > 1e9)
+		self.old_fraction = np.sum(self.poptable["x_j(%)"][older]) / np.sum(self.poptable["x_j(%)"])
+		self.inter_fraction = np.sum(self.poptable["x_j(%)"][inter]) / np.sum(self.poptable["x_j(%)"])
+		self.young_faction = np.sum(self.poptable["x_j(%)"][young]) / np.sum(self.poptable["x_j(%)"])
+		
 		# Now, read in the observed + model spectrum table.
-
-		# Transfer data containing poulations table into a temporary file.
-		self.temp_table = open("temp.txt","w")
-		self.temp_table.writelines( self.star[3*self.no_bases+81:3*self.no_bases+81+self.no_points])
-		self.temp_table.close()
-
-		# Create an Astropy table based on the above temporary file.
-		self.modelspec = Table.read("temp.txt", format="ascii")
+		self.modelspec = Table.read(self.star[3*self.no_bases+81:3*self.no_bases\
+									+81+self.no_points], format="ascii")
 		self.modelspec = self.modelspec[ self.modelspec["col4"] != -2 ]
-		# And now delete the file.
-		os.remove("temp.txt")
-
 		# Intialization Complete.
 	
-	def mean_metallicity(self):
+	def light_meanz(self):
 		"""
-		Determines the mean metallacity using population vector percentages for weighing.
+		Determines the mean metallacity using light vector percentages for weighing.
 		"""
 		popvector = self.poptable["x_j(%)"]
 		metallicities = self.poptable["Z_j"]
 
 		return np.sum(popvector*metallicities) / np.sum(popvector)
-
-	def mean_age(self):
+	
+	def mass_meanz(self):
 		"""
-		Determines the mean age using population vector percentages for weighing. 
-		Age output is in Gyrs.
+		Determines the mean metallacity using mass vector percentages for weighing.
+		"""
+		popvector = self.poptable["Mini_j(%)"]
+		metallicities = self.poptable["Z_j"]
+
+		return np.sum(popvector*metallicities) / np.sum(popvector)
+
+	def light_meanage(self):
+		"""
+		Determines the mean log age using light vector percentages for weighing. 
+		Age output is in log.
 		"""
 		popvector = self.poptable["x_j(%)"]
-		ages = self.poptable["age_j(yr)"]
+		log_ages = np.log10(self.poptable["age_j(yr)"])
 
-		return np.sum(popvector*ages) / (np.sum(popvector) * 1e9)
+		return np.sum(popvector*log_ages) / (np.sum(popvector))
 
+	def mass_meanage(self):
+		"""
+		Determines the mean log age using light vector percentages for weighing. 
+		Age output is in log.
+		"""
+		popvector = self.poptable["Mini_j(%)"]
+		log_ages = np.log10(self.poptable["age_j(yr)"])
 
-		
+		return np.sum(popvector*log_ages) / (np.sum(popvector))
 
-
-
-
-
-		
