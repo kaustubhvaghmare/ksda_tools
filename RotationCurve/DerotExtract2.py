@@ -16,7 +16,7 @@ from pyraf import iraf
 import pysynphot as ps
 from RotationCurveLib import *
 from DerotLibrary import *
-from numpy.polynomial.polynomial import polyval
+from numpy.polynomial.chebyshev import chebval
 
 # Start by validating inputs.
 if len(sys.argv) != 4:
@@ -95,7 +95,7 @@ for w in range(no_windows):
 #			pf.writeto(tempfile, data = spec_data, header=header)
 #			pf.writeto(temp_erfile, data = spec_err, header=er_header)
 			# Use Spline to get wavelength associated with 
-			redshift_at_aperture = polyval(row, interp_coeff_z)
+			redshift_at_aperture = chebval(row, interp_coeff_z)
 			# Deredshift the spectrum.
 			iraf.noao.twodspec.longslit.dopcor(input=tempfile, output=tempfile, redshift = float(redshift_at_aperture))
 			iraf.noao.twodspec.longslit.dopcor(input=temp_erfile, output=temp_erfile, redshift = float(redshift_at_aperture))
