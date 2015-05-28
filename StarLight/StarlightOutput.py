@@ -48,7 +48,7 @@ class StarOutput(object):
 		older = (self.poptable["age_j(yr)"] > 1e9)
 		self.old_fraction = np.sum(self.poptable["x_j(%)"][older]) / np.sum(self.poptable["x_j(%)"])
 		self.inter_fraction = np.sum(self.poptable["x_j(%)"][inter]) / np.sum(self.poptable["x_j(%)"])
-		self.young_faction = np.sum(self.poptable["x_j(%)"][young]) / np.sum(self.poptable["x_j(%)"])
+		self.young_fraction = np.sum(self.poptable["x_j(%)"][young]) / np.sum(self.poptable["x_j(%)"])
 		
 		# Now, read in the observed + model spectrum table.
 		self.modelspec = Table.read(self.star[3*self.no_bases+81:3*self.no_bases\
@@ -94,3 +94,20 @@ class StarOutput(object):
 
 		return np.sum(popvector*log_ages) / (np.sum(popvector))
 
+class StarError(object):
+	"""
+	To represent error information obtained through simulations.
+	"""
+	def __init__(self, filename):
+		er_table = Table.read(filename, format="ascii")
+
+		self.mass_meanage = er_table["StdDev"][9]
+		self.light_meanage = er_table["StdDev"][8]
+		self.mass_meanz = er_table["StdDev"][7]
+		self.light_meanz = er_table["StdDev"][6]
+		self.young_fraction = er_table["StdDev"][5]
+		self.inter_fraction = er_table["StdDev"][4]
+		self.old_fraction = er_table["StdDev"][3]
+		self.vel0 = er_table["StdDev"][0]
+		self.veldisp = er_table["StdDev"][1]
+		self.av = er_table["StdDev"][2]

@@ -18,7 +18,7 @@ except:
 	sys.exit(2)
 
 grid_template = """{0:d}                                                [Number of fits to run]
-/home/kaustubh/Tools/Starlight/STARLIGHTv04/MilesBase/                 [base_dir]
+/home/kaustubh/Tools/Starlight/STARLIGHTv04/ModifiedMiles/                 [base_dir]
 {1:s}/                                                  [obs_dir]
 {1:s}/                                                  [mask_dir]
 {1:s}/                                                 [out_dir]
@@ -36,7 +36,7 @@ FIT                                              [FIT/FXK] Fit or Fix kinematics
 
 standard_config = "StCv04.C11.config"
 common_mask = filename[:-4]+"mask" #"Masks.EmLines.SDSS.gm"
-base_file = "Base.miles.Mun1.30.3Z"
+base_file = "Base.Miles.Girardi.un.All"
 redenning_law = "CCM"
 initial_vel = 0
 initial_vdisp = 150
@@ -73,10 +73,9 @@ for apfile in aper_files:
 		grid_rest += "%s   %s   %s   %s   %s   %s   %s   %s\n" % ("realization_%d.dat" % (i+1), standard_config,
 		base_file, common_mask, redenning_law, initial_vel, initial_vdisp, "realization_%d.out" % (i+1))
 	star_grid.write(grid_rest)
-	os.system("cp ../StCv04.C11.config ../%s ../Base.miles.Mun1.30.3Z . " % (filename[:-4]+"mask" ) )
+	os.system("cp ../StCv04.C11.config ../%s ../Base.Miles.Girardi.un.All . " % (filename[:-4]+"mask" ) )
 	os.system("/home/kaustubh/Tools/Starlight/STARLIGHTv04/StarlightChains_v04.exe < %s_simgrid.in" % apfile[:-4])
-	break
-
+	os.chdir("../")
 
 		
 
