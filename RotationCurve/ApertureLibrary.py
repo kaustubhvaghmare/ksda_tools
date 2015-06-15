@@ -173,7 +173,7 @@ def GetCentroid( spatial_points, intensities):
 
 #change directory to where image file is
 os.chdir(pathrun)
-def get_aperture(filename, file_err=None):
+def get_aperture(filename, file_err=None, centroid=False):
 
 	if file_err is None:
 		file_err = filename
@@ -187,7 +187,8 @@ def get_aperture(filename, file_err=None):
 	temp = np.arange(len(xsection))
 	np.savetxt("selfdeffunc.txt", np.vstack( (temp, xsection) ) )
 	
-	centroid = GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
+	if not centroid:
+		centroid = GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
 	
 	#plotting the x-section for window selection
 	plt.plot(xsection)

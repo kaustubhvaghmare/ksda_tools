@@ -19,9 +19,9 @@ from DerotLibrary import *
 from numpy.polynomial.chebyshev import chebval
 
 # Start by validating inputs.
-if len(sys.argv) != 4:
+if len(sys.argv) < 4:
 	print("Incorrect Usage.")
-	print("Usage is: python DerotExtract.py <2dspecfile> <rotationcurve> <2dspec_errorfile>")
+	print("Usage is: python DerotExtract.py <2dspecfile> <rotationcurve> <2dspec_errorfile> [optional_centroid]")
 	sys.exit(2)
 
 # Check if files specified are genuine.
@@ -37,6 +37,11 @@ if not os.path.isfile(filename):
 	sys.exit(3)
 errfilename_root = filename.replace(".fits", "")
 
+try:
+	centroid = float(sys.argv[4])
+except:
+	centroid = False
+
 ############################
 ############################
 
@@ -50,11 +55,15 @@ if not os.path.isfile(rotcurve) or not os.path.isfile(rotcurve2):
 # Load the solution.
 interp_coeff_z = pickle.load(open(rotcurve2))
 
+# Determine centroid of the spatial profile for the 2d spectra.
+if not centroid:
+	centroid =  GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
+
 # Take the user through the following steps
 # Display spatial profile.
 # Mark windows / apertures
 # Get aperture coordinate array.
-aperture_coordinates = al.get_aperture(filename)
+aperture_coordinates = al.get_aperture(filename, centroid=centroid)
 
 # aperture_coordinates[0] = array of apertures for first window.
 # This is how aperture_coordinates is structured.
@@ -69,8 +78,6 @@ er_hdulist = pf.open(err_filename)
 er_data = er_hdulist[0].data
 er_header = er_hdulist[0].header
 
-# Determine centroid of the spatial profile for the 2d spectra.
-centroid =  GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
 
 
 aperture_map = open(filename_root+"_aper_map.dat", "w")
