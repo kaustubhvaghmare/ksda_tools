@@ -145,3 +145,40 @@ for q, q_err, q_name in zip(quantities, quantities_err, quant_names):
 
 results.close()
 
+logage_bins = np.linspace(7.5, 10.5, 15+1)
+logage_binwidth = logage_bins[1] - logage_bins[0]
+
+histories = PdfPages(filename[:-5] + '_histories.pdf')
+fig3 = plt.figure(3)
+for i, apfile in enumerate(aper_files):
+	# Open the main Starlight output.
+	slout = StarOutput(apfile[:-4] + '.out')
+	# Get the population table.
+	poptable = slout.poptable
+	# Obtain and normalize population vector.
+	pop_vector_norm = poptable['x_j(%)'] / np.sum(poptable['x_j(%)']) * 100
+	mas_vector_norm = poptable['Mini_j(%)'] / np.sum(poptable['Mini_j(%)']) * 100
+	# Bin the ages.
+	memberships = np.digitize( np.log10( poptable['age_j(yr)'] ), logage_bins )
+	rebinned_popvec = np.zeros( 15, dtype=float)
+	rebinned_masvec = np.zeros( 15, dtype=float)
+	for j in np.arange(1,16):
+		rebinned_popvec[j-1] = pop_vector_norm[ (memberships == j) ].sum()
+		rebinned_masvec[j-1] = mas_vector_norm[ (memberships == j) ].sum()
+
+	ax1 = plt.axes( [0.1,0.55,0.8,0.40] )
+	ax1.bar( logage_bins[:-1], rebinned_popvec, width = logage_binwidth )
+	#ax1.set_xlabel('log (Age in Yrs)', fontsize=18)
+	ax1.set_title('Distance from Center = %.3f' % aperture_distances[i], fontsize=14)
+	ax1.set_ylabel('% (light)', fontsize=18)
+
+
+	ax2 = plt.axes( [0.1,0.1,0.8,0.40] )
+	ax2.bar( logage_bins[:-1], rebinned_masvec, width = logage_binwidth )
+	ax2.set_xlabel('log (Age in Yrs)', fontsize=18)
+	ax2.set_ylabel('% (mass)', fontsize=18)
+	
+	histories.savefig()
+	fig3.clf()
+
+histories.close()

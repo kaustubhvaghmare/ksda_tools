@@ -55,10 +55,6 @@ if not os.path.isfile(rotcurve) or not os.path.isfile(rotcurve2):
 # Load the solution.
 interp_coeff_z = pickle.load(open(rotcurve2))
 
-# Determine centroid of the spatial profile for the 2d spectra.
-if not centroid:
-	centroid =  GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
-
 # Take the user through the following steps
 # Display spatial profile.
 # Mark windows / apertures
@@ -77,6 +73,10 @@ header = hdulist[0].header
 er_hdulist = pf.open(err_filename)
 er_data = er_hdulist[0].data
 er_header = er_hdulist[0].header
+
+# Determine centroid of the spatial profile for the 2d spectra.
+if not centroid:
+	centroid =  GetCentroid( range(header["NAXIS2"]), np.sum(data, axis=1) )
 
 
 
