@@ -73,14 +73,14 @@ for i, apfile in enumerate(aper_files):
 	youngfrac_err[i] = slerr.young_fraction
 	interfrac_err = slerr.inter_fraction
 	oldfrac_err = slerr.old_fraction
-	
+
 	vel0[i] = slout.vel0
 	veldisp[i] = slout.veldisp
 	avs[i] = slout.av
 	vel0_err = slerr.vel0
 	veldisp_err = slerr.veldisp
 	avs_err = slerr.av
-	
+
 	# Start to make of the spectrum, residue and the main plots.
 	ax1 = plt.axes( [0.1,0.6,0.8,0.35] )
 	ax1.plot(slout.modelspec["col1"], slout.modelspec["col2"], color="green", label='Observed')
@@ -100,7 +100,7 @@ for i, apfile in enumerate(aper_files):
 	#ax3.set_visible(False)
 	ax3.xaxis.set_visible(False)
 	ax3.yaxis.set_visible(False)
-	quantities = [ 
+	quantities = [
 ['Dist. From Centre', '%.3f' % aperture_distances[i], '', ''],
 ['RCS',r'%.3f  ' % (slout.chi2_reduced),  'Avg Dev.',r'%.3f   ' % (slout.adev)],
 ['LMZ',r'%.3f  %.3f' % (slout.light_meanz(), slerr.light_meanz),  'MMZ',r'%.3f  %.3f' % (slout.mass_meanz(), slerr.mass_meanz)],
@@ -111,7 +111,7 @@ for i, apfile in enumerate(aper_files):
 			]
 	ax3.table(cellText=quantities)
 
-	
+
 	models.savefig()
 	fig1.clf()
 
@@ -120,7 +120,7 @@ models.close()
 # Define quantities to be plotted.
 quantities = [lzs, mzs, lages, mages, youngfrac, interfrac, oldfrac,
 			vel0, veldisp, avs]
-quantities_err = [lzs_err, mzs_err, lages_err, mages_err, youngfrac_err, 
+quantities_err = [lzs_err, mzs_err, lages_err, mages_err, youngfrac_err,
 			interfrac_err, oldfrac_err, vel0_err, veldisp_err, avs_err]
 quant_names = ['Light Weighted Mean Z',
 				'Mass Weighted Mean Z',
@@ -128,7 +128,7 @@ quant_names = ['Light Weighted Mean Z',
 				'Mass Weighted Mean Age',
 				r'Fraction of Young Stars ($<10^8$)',
 				r'Fraction of Intermediate Stars ($>10^8, <10^9$)',
-				r'Fraction of Old Stars ($>10^{10}$)',
+				r'Fraction of Old Stars ($>10^{9}$)',
 				'Vel0',
 				'Dispersion Velocity',
 				'Av']
@@ -177,8 +177,46 @@ for i, apfile in enumerate(aper_files):
 	ax2.bar( logage_bins[:-1], rebinned_masvec, width = logage_binwidth )
 	ax2.set_xlabel('log (Age in Yrs)', fontsize=18)
 	ax2.set_ylabel('% (mass)', fontsize=18)
-	
+
 	histories.savefig()
 	fig3.clf()
 
 histories.close()
+
+logmet_bins = np.linspace(0.004, 0.02, 15+1)
+logmet_binwidth = logmet_bins[1] - logmet_bins[0]
+
+metallicities = PdfPages(filename[:-5] + '_metallicities.pdf')
+fig4 = plt.figure(4)
+for i, apfile in enumerate(aper_files):
+	# Open the main Starlight output.
+	slout = StarOutput(apfile[:-4] + '.out')
+	# Get the population table.
+	poptable = slout.poptable
+	# Obtain and normalize population vector.
+	pop_vector_norm = poptable['x_j(%)'] / np.sum(poptable['x_j(%)']) * 100
+	mas_vector_norm = poptable['Mini_j(%)'] / np.sum(poptable['Mini_j(%)']) * 100
+	# Bin the ages.
+	memberships = np.digitize(  poptable['Z_j'], logmet_bins )
+	rebinned_popvec = np.zeros( 15, dtype=float)
+	rebinned_masvec = np.zeros( 15, dtype=float)
+	for j in np.arange(1,16):
+		rebinned_popvec[j-1] = pop_vector_norm[ (memberships == j) ].sum()
+		rebinned_masvec[j-1] = mas_vector_norm[ (memberships == j) ].sum()
+
+	ax1 = plt.axes( [0.1,0.55,0.8,0.40] )
+	ax1.bar( logmet_bins[:-1], rebinned_popvec, width = logmet_binwidth )
+	#ax1.set_xlabel('log (Age in Yrs)', fontsize=18)
+	ax1.set_title('Distance from Center = %.3f' % aperture_distances[i], fontsize=14)
+	ax1.set_ylabel('% (light)', fontsize=18)
+
+
+	ax2 = plt.axes( [0.1,0.1,0.8,0.40] )
+	ax2.bar( logmet_bins[:-1], rebinned_masvec, width = logmet_binwidth )
+	ax2.set_xlabel('log (Age in Yrs)', fontsize=18)
+	ax2.set_ylabel('% (mass)', fontsize=18)
+
+	metallicities.savefig()
+	fig4.clf()
+
+metallicities.close()
